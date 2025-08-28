@@ -15,10 +15,7 @@ class UserDb:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 family TEXT,
-                role TEXT,
-                hourly_rate INTEGER,
-                total_hour INTEGER,
-                total_minute INTEGER
+                role TEXT
                 )
             """)
             conn.commit()
@@ -63,6 +60,6 @@ class UserDb:
             cursor = conn.cursor()
             cursor.execute("""
             UPDATE users SET name=?, family=?, role=?, hourly_rate=?,total_hour=?, total_minute=? WHERE id=?
-            """, (user.name, user.family, user.role, user.hourly_rate,user.total_hour, user.total_minute, user.id))
+            """, (user.name, user.family, user.role, user.hourly_rate,user.total_hour, user.total_minute, user.id))                             
 
 
