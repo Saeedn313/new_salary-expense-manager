@@ -1,65 +1,50 @@
-import sqlite3
 from config import DB_FILE
+from base_db import BaseDb
+from models.users import User
 
 
 
-class UserDb:
+class UserDb(BaseDb):
     def __init__(self):
-        self.connection = sqlite3.connect(DB_FILE, check_same_thread=False)
+        super().__init__()
+        self.table_name = "users"
 
-    def init_db(self):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                family TEXT,
-                role TEXT
-                )
-            """)
-            conn.commit()
+    def create_cost_tables(self):
+            cursor = self.conn.cursor()
+            cols = {
+                'user_id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                'name': 'TEXT NOT NULL',
+                'family': 'TEXT NOT NULL',
+                'role': 'TEXT NOT NULL',
+                'created_at': 'TEXT DEFAULT CURRENT_TIMESTAMP'
+            }
+            cursor.execute(self.create_tables(self.table_name, cols))
+            self.conn.commit()
 
-    def add(self, user):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-            INSERT INTO users (name, family, role, hourly_rate, total_hour, total_minute)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """, (user.name, user.family, user.role, user.hourly_rate,user.total_hour, user.total_minute))
-            conn.commit()
-            user.id = cursor.lastrowid
+
+    def add_user(self, user: User):
+        cursor = self.conn.cursor()
+        columns = ["name", "family", "role"]
+        cursor.execute(self.add(self.table_name, columns), (user.name, user.family, user.role))
+        user.id = cursor.lastrowid
+        self.conn.commit()
         return user
-
-    def fetch_all(self):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            rows = cursor.execute("""
-            SELECT * FROM users
-            """).fetchall()
+    
+    def get_all_users(self):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(self.fetch_all(self.table_name)).fetchall()
         return rows
-
-    def fetch_one(self, user_id):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            row = cursor.execute("""
-                SELECT * FROM users WHERE id=?
-            """, (user_id,)).fetchone()
-
+    
+    def get_one_user(self, user_id):
+        cursor = self.conn.cursor()
+        row = cursor.execute(self.fetch_one(self.table_name, "user_id"), (user_id,)).fetchone()
         return row
     
-    def delete(self, user_id):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                DELETE FROM users WHERE id=?
-            """, (user_id,))
+    def delete_user(self, cost_id):
+        cursor = self.conn.cursor()
+        cursor.execute(self.delete(self.table_name, "user_id"), (cost_id, ))
 
-    def update(self, user):
-        with self.connection as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-            UPDATE users SET name=?, family=?, role=?, hourly_rate=?,total_hour=?, total_minute=? WHERE id=?
-            """, (user.name, user.family, user.role, user.hourly_rate,user.total_hour, user.total_minute, user.id))                             
-
-
+    def update_user(self, user: User):
+        cursor = self.conn.cursor()
+        columns = ["name", "family", "role"]
+        cursor.execute(self.update(self.table_name, columns), (user.name, user.family, user.role))
