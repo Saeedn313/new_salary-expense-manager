@@ -118,96 +118,96 @@
 #     return {"data": post_dict}
 
 
-from models.users import User, Developer, Manager
-from db.user_db import UserDb
-from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel
+# from models.users import User, Developer, Manager
+# from db.user_db import UserDb
+# from fastapi import FastAPI, HTTPException, status
+# from pydantic import BaseModel
 
-app = FastAPI()
-user_db = UserDb()
-user_db.init_db()
+# app = FastAPI()
+# user_db = UserDb()
+# user_db.init_db()
 
-class UserIn(BaseModel):
-    name: str
-    family: str
-    role: str
-    hourly_rate: int
-    total_hour: int
-    total_minute: int
-
-
-class UserOut(UserIn):
-    id: int
-    salary: int
-
-@app.get("/")
-def home():
-    return {"response": "welcome"}
-
-@app.get('/users')
-def get_users():
-    users = []
-    rows = user_db.fetch_all()
-    for row in rows:
-        user_id, name, family, role, hourly_rate, total_hour, total_minute = row
-        if role == "Developer":
-            user = Developer(name, family, hourly_rate, total_hour, total_minute)
-        elif role == "Manager":
-            user = Manager(name, family, hourly_rate, total_hour, total_minute)
-        user.id = user_id
-        user.salary = user.calc_salary()
-
-        users.append(user)
-
-    return {"users": users}
+# class UserIn(BaseModel):
+#     name: str
+#     family: str
+#     role: str
+#     hourly_rate: int
+#     total_hour: int
+#     total_minute: int
 
 
-@app.get("/users/{id}")
-def get_user(id):
-    row = user_db.fetch_one(id)
-    if row is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id:{id} not found")
-    user_id, name, family, role, hourly_rate, total_hour, total_minute = row
-    if role == "Developer":
-        user = Developer(name, family, hourly_rate, total_hour, total_minute)
-    elif role == "Manager":
-        user = Manager(name, family, hourly_rate, total_hour, total_minute)
+# class UserOut(UserIn):
+#     id: int
+#     salary: int
 
-    user.id = user_id
-    user.salary = user.calc_salary()
-    return {"user": user}
+# @app.get("/")
+# def home():
+#     return {"response": "welcome"}
 
-@app.post("/users")
-def create_user(user: UserIn):
-    # new_user = user_db.add(user.dict())
-    user_dict = user.dict()
-    if user_dict['role'] == "Developer":
-        user = Developer(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
-    elif user_dict['role'] == "Manager":
-        user = Manager(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
+# @app.get('/users')
+# def get_users():
+#     users = []
+#     rows = user_db.fetch_all()
+#     for row in rows:
+#         user_id, name, family, role, hourly_rate, total_hour, total_minute = row
+#         if role == "Developer":
+#             user = Developer(name, family, hourly_rate, total_hour, total_minute)
+#         elif role == "Manager":
+#             user = Manager(name, family, hourly_rate, total_hour, total_minute)
+#         user.id = user_id
+#         user.salary = user.calc_salary()
 
-    new_user = user_db.add(user)
-    return {"new user": new_user}
+#         users.append(user)
 
-@app.delete("/users/{id}")
-def delete_user(id):
-    user = user_db.fetch_one(id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found")
-    user_db.delete(id)
-    return {"detail": "user deleted!"}
+#     return {"users": users}
 
-@app.put("/users/{id}")
-def updata_user(id, user_in: UserIn):
-    user_dict = user_in.dict()
-    if user_dict['role'] == "Developer":
-        updated_user = Developer(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
-    elif user_dict['role'] == "Manager":
-        updated_user = Manager(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
+
+# @app.get("/users/{id}")
+# def get_user(id):
+#     row = user_db.fetch_one(id)
+#     if row is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id:{id} not found")
+#     user_id, name, family, role, hourly_rate, total_hour, total_minute = row
+#     if role == "Developer":
+#         user = Developer(name, family, hourly_rate, total_hour, total_minute)
+#     elif role == "Manager":
+#         user = Manager(name, family, hourly_rate, total_hour, total_minute)
+
+#     user.id = user_id
+#     user.salary = user.calc_salary()
+#     return {"user": user}
+
+# @app.post("/users")
+# def create_user(user: UserIn):
+#     # new_user = user_db.add(user.dict())
+#     user_dict = user.dict()
+#     if user_dict['role'] == "Developer":
+#         user = Developer(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
+#     elif user_dict['role'] == "Manager":
+#         user = Manager(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
+
+#     new_user = user_db.add(user)
+#     return {"new user": new_user}
+
+# @app.delete("/users/{id}")
+# def delete_user(id):
+#     user = user_db.fetch_one(id)
+#     if user is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found")
+#     user_db.delete(id)
+#     return {"detail": "user deleted!"}
+
+# @app.put("/users/{id}")
+# def updata_user(id, user_in: UserIn):
+#     user_dict = user_in.dict()
+#     if user_dict['role'] == "Developer":
+#         updated_user = Developer(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
+#     elif user_dict['role'] == "Manager":
+#         updated_user = Manager(user_dict['name'], user_dict['family'], user_dict['hourly_rate'], user_dict['total_hour'], user_dict['total_minute'])
     
-    updated_user.id = id
-    user_db.update(updated_user)
-    return {"detail": f"user updated {updated_user}"}
+#     updated_user.id = id
+#     user_db.update(updated_user)
+#     return {"detail": f"user updated {updated_user}"}
 
 
 
@@ -216,5 +216,13 @@ def updata_user(id, user_in: UserIn):
 # if user_exist is None:
 #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found!")
 
+from fastapi import FastAPI
+from api.routers import user
 
+app = FastAPI()
+app.include_router(user.router)
+
+@app.get("/")
+def home():
+    return "welcome to fastapi"
 

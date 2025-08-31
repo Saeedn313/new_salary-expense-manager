@@ -3,7 +3,7 @@ from config import DB_FILE
 
 class BaseDb:
     def __init__(self):
-        self.conn = sqlite3.connect(DB_FILE)
+        self.conn = sqlite3.connect(DB_FILE, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
 
     def close(self):
@@ -23,7 +23,7 @@ class BaseDb:
     
     def add(self, table_name: str, columns: list):
         sql_columns = ", ".join(columns)
-        placeholders = ", ".join("?" for _ in range(columns))
+        placeholders = ", ".join("?" for _ in columns)
         command = f"INSERT INTO {table_name} ({sql_columns}) VALUES ({placeholders})"
         return command
 

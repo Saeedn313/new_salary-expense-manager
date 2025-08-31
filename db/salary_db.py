@@ -9,13 +9,15 @@ class Salary(BaseDb):
         cursor = self.conn.cursor()
         cols = {
             "salary_id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+            "user_id": "INTEGER NOT NULL",
             "year": "INTEGER NOT NULL",
             "month": "INTEGER NOT NULL",
             "hourly_rate": "REAL NOT NULL",
             "total_min": "INTEGER NOT NULL",
             "total_hour": "REAL NOT NULL",
             "total_salary": "REAL NOT NULL",
-            "created_at": "TEXT DEFAULT CURRENT_TIMESTAMP"
+            "created_at": "TEXT DEFAULT CURRENT_TIMESTAMP",
+            "FOREIGN KEY": "user_id REFERENCES users(user_id)"
         }
         cursor.execute(self.create_tables(self.table_name, cols))
         self.conn.commit()

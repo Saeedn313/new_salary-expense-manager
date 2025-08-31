@@ -1,5 +1,5 @@
 from config import DB_FILE
-from base_db import BaseDb
+from .base_db import BaseDb
 from models.users import User
 
 
@@ -9,7 +9,7 @@ class UserDb(BaseDb):
         super().__init__()
         self.table_name = "users"
 
-    def create_cost_tables(self):
+    def create_user_tables(self):
             cursor = self.conn.cursor()
             cols = {
                 'user_id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
@@ -40,9 +40,9 @@ class UserDb(BaseDb):
         row = cursor.execute(self.fetch_one(self.table_name, "user_id"), (user_id,)).fetchone()
         return row
     
-    def delete_user(self, cost_id):
+    def delete_user(self, user_id):
         cursor = self.conn.cursor()
-        cursor.execute(self.delete(self.table_name, "user_id"), (cost_id, ))
+        cursor.execute(self.delete(self.table_name, "user_id"), (user_id, ))
 
     def update_user(self, user: User):
         cursor = self.conn.cursor()
