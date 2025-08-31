@@ -1,5 +1,6 @@
 from db.user_db import UserDb
 from models.users import User
+from fastapi import HTTPException, status
 
 user_db = UserDb()
 user_db.create_user_tables()
@@ -8,6 +9,8 @@ def get_all_users_service():
     all_users = []
     try:
         rows = user_db.get_all_users()
+        if rows is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='no cost found!')
         for row in rows:
             user = User(name=row["name"], family=row["family"], role=row["role"], id=row["user_id"])
             all_users.append(user.dict())
@@ -23,6 +26,8 @@ def add_user_service(user: User):
 
 def delete_user_service(user_id: int):
     try:
+        if user_db.get_one_user(user_id) is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="not user found to delete!")
         user_db.delete_user(user_id)
         return True
     except Exception as e:
@@ -30,6 +35,8 @@ def delete_user_service(user_id: int):
 
 def update_user_service(user_id: int, user: User):
     try:
+        if user_db.get_one_user(user_id) is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="not user found to delete!")
         user.id = user_id
         user_db.update_user(user)
         return True

@@ -217,10 +217,11 @@
 #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found!")
 
 from fastapi import FastAPI
-from api.routers import user
+from api.routers import user, cost
 
 app = FastAPI()
 app.include_router(user.router)
+app.include_router(cost.router)
 
 @app.get("/")
 def home():
