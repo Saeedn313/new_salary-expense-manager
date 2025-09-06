@@ -39,9 +39,9 @@ class BaseDb:
         command = f"DELETE FROM {table_name} WHERE {col}=?"
         return command
     
-    def update(self, table_name, columns):
+    def update(self, table_name, columns, col):
         cols = ", ".join([f"{col}=?" for col in columns])
-        command = f"UPDATE {table_name} SET {cols} WHERE id=?"
+        command = f"UPDATE {table_name} SET {cols} WHERE {col}=?"
         return command
 
         
