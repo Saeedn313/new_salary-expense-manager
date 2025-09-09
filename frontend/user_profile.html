@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+    <div class="profile">
+    <div class="profile-item">
+      <span class="label">ID:</span> {{ user.id }}
+    </div>
+    <div class="profile-item">
+      <span class="label">Name:</span> {{ user.name }}
+    </div>
+    <div class="profile-item">
+      <span class="label">Family:</span> {{ user.family }}
+    </div>
+    <div class="profile-item">
+      <span class="label">Role:</span> {{ user.role }}
+    </div>
+    <div class="profile-item">
+      <span class="label">Created At:</span> {{ user.created_at or "N/A" }}
+    </div>
+  </div>
+
+   <form action="{{ url_for('update_user', user_id=user.id) }}" method="post" id="userForm">
+        <label for="name">First Name:
+            <input type="text" id="name" name="name" value="{{ user.name }}" required />
+        </label>
+
+        <label for="family">Last Name:
+            <input type="text" id="family" name="family" value="{{ user.family }}" required />
+        </label>
+
+        <label for="role">Role:
+            <select id="role" name="role" required>
+                <option value="">Select role</option>
+                <option value="Manager" {% if user.role == "Manager" %}selected{% endif %}>Manager</option>
+                <option value="Developer" {% if user.role == "Developer" %}selected{% endif %}>Developer</option>
+            </select>
+        </label>
+
+        <button type="submit">Update User</button>
+    </form>
+
+  <a href="{{ url_for('get_all_users') }}">← Back to user list</a>
+</body>
+<script>
+document.getElementById("userForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const jsonData = Object.fromEntries(formData.entries());
+
+    fetch("{{ request.url_for('update_user', user_id=user.id) }}", {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jsonData)
+    })
+    .then(() => {
+        window.location.href = "{{ request.url_for('get_one_user', user_id=user.id) }}";
+    });
+});
+</script>
+</html>
