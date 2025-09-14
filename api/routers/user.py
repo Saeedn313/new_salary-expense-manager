@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
-from models.users import UserIn
+from models.users import UserIn, UserOut
 from db.user_db import UserDb
+from db.salary_db import SalaryDb
 import os
 
 
@@ -10,6 +11,7 @@ import os
 # tags is used for /docs in fastapi
 router = APIRouter(prefix="/users", tags=["users"])
 user_db = UserDb()
+salary_db = SalaryDb()
 user_db.create_user_tables()
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
@@ -21,7 +23,9 @@ def get_all_users(request: Request):
         users = user_db.get_all_users()
         if len(users) < 1:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found!")
-        return templates.TemplateResponse("users.html", {"request": request, "users": users})
+        
+        users_out = [UserOut(**user.to_dict()) for user in users]
+        return templates.TemplateResponse("users.html", {"request": request, "users": users_out})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -31,7 +35,11 @@ def get_one_user(user_id: int, request: Request):
         user = user_db.get_one_user(user_id)
         if user == None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no user found")
-        return templates.TemplateResponse("user_profile.html", {"request": request, "user": user})
+        
+        salary = salary_db.get_latest_salary(user_id)
+
+        user_out = UserOut(**user.to_dict())
+        return templates.TemplateResponse("user_profile.html", {"request": request, "user": user_out, "salary": salary})
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")

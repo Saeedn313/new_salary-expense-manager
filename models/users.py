@@ -14,6 +14,18 @@ class User:
     def calc_salary(self, hourly_rate: float, total_hour: int, total_min: int) -> int:
         total_hours = (total_min / 60) + total_hour
         return int(total_hours * hourly_rate)
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "family": self.family,
+            "id": self.id,
+            "role": getattr(self, "role", None),
+            "created_at": self.created_at
+        }
+
+    def __repr__(self):
+        return f"<{self.id}> {self.name} {self.family} {self.created_at}"
 
 
 class Developer(User):

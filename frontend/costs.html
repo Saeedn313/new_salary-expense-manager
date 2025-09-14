@@ -32,20 +32,38 @@
             </thead>
             <tbody>
                 {% for cost in costs %}
+              <tr>
+                <form action="{{ url_for('update_cost', cost_id = cost.id) }}" method="post" class="updateCostForm" data-cost-id="{{ cost.id }}">
+                  <td>{{ loop.index }}</td>
+                  <td><input type="text" name="description" value="{{ cost.description }}" required></td>
+                  <td><input type="text" name="amount" step="0.01" value="{{ cost.amount }}" required></td>
+                  <td>
+                    <button type="submit">Update</button>
+                  </td>
+                </form>
+                <td>
+                <form action="{{ url_for('delete_cost', cost_id=cost.id) }}" method="post" style="display:inline;">
+                  <button type="submit">Delete</button>
+                </form>
+                </td>
+              </tr>
+              {% endfor %}
+              <table>
+            <thead>
                 <tr>
-                    <form action="#" method="post" id="updateCostForm">
-                      <td>{{ loop.index }}</td>
-                        <td><input type="text" name="description" value="{{ cost.description }}" required></td>
-                        <td><input type="text" name="amount" step="0.01" value="{{ cost.amount }}" required></td>
-                        <td>
-                            <button type="submit">Update</button>
-                    </form>
-                    <form action="{{ url_for('delete_cost', cost_id=cost.id) }}" method="post" style="display:inline;">
-                        <button type="submit">Delete</button>
-                    </form>
-                        </td>
+                  <th>Ind</th>
+                    <th>Description</th>
+                    <th>Amount</th>
                 </tr>
-                {% endfor %}
+            </thead>
+            <tbody>
+                {% for cost in costs %}
+              <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ cost.description }}</td>
+                  <td>{{ cost.amount }}</td>
+              </tr>
+              {% endfor %}
             </tbody>
         </table>
     </section>
@@ -68,20 +86,25 @@
     }
   });
 });
-document.getElementById("updateCostForm").addEventListener("submit", function(e) {
-    e.preventDefault();
 
-    const formData = new FormData(this);
-    const jsonData = Object.fromEntries(formData.entries());
+document.querySelectorAll(".updateCostForm").forEach(form => {
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    fetch("{{ request.url_for('update_cost', cost_id=cost.id) }}", {
-        method: "POST", 
+      const costId = this.dataset.costId;  // ← This grabs data-cost-id
+      const formData = new FormData(this);
+      const jsonData = Object.fromEntries(formData.entries());
+
+      fetch(`/costs/update-cost/${costId}`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData)
-    })
-    .then(() => {
-        window.location.href = "{{ request.url_for('get_all_costs') }}";
+      })
+      .then(() => {
+        window.location.href = "/costs";  // Or use url_for if rendering server-side
+      });
     });
-});
+  });
+
 </script>
 </html>

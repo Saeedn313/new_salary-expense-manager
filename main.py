@@ -216,14 +216,20 @@
 # if user_exist is None:
 #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} not found!")
 
-from fastapi import FastAPI
-from api.routers import user, cost
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from api.routers import user, cost, salary
+import os
 
 app = FastAPI()
 app.include_router(user.router)
 app.include_router(cost.router)
+app.include_router(salary.router)
 
-@app.get("/")
-def home():
-    return "welcome to fastapi"
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "frontend"))
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("main.html", {"request": request})
 

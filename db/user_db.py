@@ -1,6 +1,6 @@
 from config import DB_FILE
 from .base_db import BaseDb
-from models.users import Developer, Manager, UserOut
+from models.users import Developer, Manager
 
 
 
@@ -43,7 +43,7 @@ class UserDb(BaseDb):
         for row in rows:
             user_role = self.map_role[row["role"]]
             user = user_role(name=row["name"], family=row["family"], id=row['user_id'])
-            all_users.append(UserOut(name=user.name, family=user.family, role=user.role, id=user.id, created_at=row["created_at"]).dict())
+            all_users.append(user)
 
         return all_users
 
@@ -51,12 +51,11 @@ class UserDb(BaseDb):
     def get_one_user(self, user_id):
         cursor = self.conn.cursor()
         row = cursor.execute(self.fetch_one(self.table_name, "user_id"), (user_id,)).fetchone()
-        print(dict(row))
 
         user_obj = self.map_role[row["role"]]
         user = user_obj(name=row["name"], family=row["family"], id=row["user_id"])
 
-        return UserOut(name=user.name, family=user.family, role=user.role, id=user.id, created_at=row["created_at"]) if user is not None else None
+        return user if user is not None else None
     
     def delete_user(self, user_id: int):
         cursor = self.conn.cursor()

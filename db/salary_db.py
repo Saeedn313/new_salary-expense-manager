@@ -112,3 +112,8 @@ class SalaryDb(BaseDb):
         self.conn.commit()
 
         return cursor.rowcount > 0
+
+    def get_latest_salary(self, user_id: int):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT * FROM {self.table_name} WHERE user_id=?", (user_id,)).fetchone()
+        return row["total_salary"] if row else None
