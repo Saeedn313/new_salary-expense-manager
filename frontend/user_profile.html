@@ -1,96 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - Inline Salary Edit</title>
+    <style>
+        .section-header {
+            background: #eee;
+            padding: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-section {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .edit-form {
+            display: none;
+            background: #f9f9f9;
+            padding: 12px;
+            border: 1px solid #ddd;
+            margin-top: 12px;
+        }
+    </style>
 </head>
+
 <body>
     <h1>User Profile</h1>
     <div class="profile">
-    <div class="profile-item">
-      <span class="label">ID:</span> {{ user.id }}
+        <div class="profile-item"><span class="label">ID:</span> {{ user.id }}</div>
+        <div class="profile-item"><span class="label">Name:</span> {{ user.name }}</div>
+        <div class="profile-item"><span class="label">Family:</span> {{ user.family }}</div>
+        <div class="profile-item"><span class="label">Role:</span> {{ user.role }}</div>
+        <div class="profile-item"><span class="label">Created At:</span> {{ user.created_at or "N/A" }}</div>
     </div>
-    <div class="profile-item">
-      <span class="label">Name:</span> {{ user.name }}
+
+    <div class="section-header" onclick="toggleSection('updateUser')">Update User</div>
+    <div id="updateUser" class="form-section active">
+        <form action="{{ url_for('update_user', user_id=user.id) }}" method="post" id="userForm">
+            <label>First Name: <input type="text" name="name" value="{{ user.name }}" required></label>
+            <label>Last Name: <input type="text" name="family" value="{{ user.family }}" required></label>
+            <label>Role:
+                <select name="role" required>
+                    <option value="">Select role</option>
+                    <option value="Manager" {% if user.role=="Manager" %}selected{% endif %}>Manager</option>
+                    <option value="Developer" {% if user.role=="Developer" %}selected{% endif %}>Developer</option>
+                </select>
+            </label>
+            <button type="submit">Update User</button>
+        </form>
     </div>
-    <div class="profile-item">
-      <span class="label">Family:</span> {{ user.family }}
+
+    <div class="section-header" onclick="toggleSection('addSalary')">Add Salary</div>
+    <div id="addSalary" class="form-section">
+        <form action="{{ url_for('add_salary') }}" method="post">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <label>Year: <input type="number" name="year" min="2000" max="2100" required></label>
+            <label>Month: <input type="number" name="month" min="1" max="12" required></label>
+            <label>Hourly Rate: <input type="number" name="hourly_rate" step="0.01" required></label>
+            <label>Total Minutes: <input type="number" name="total_min" min="0" required></label>
+            <label>Total Hours: <input type="number" name="total_hour" step="0.01" required></label>
+            <button type="submit">Save Salary</button>
+        </form>
     </div>
-    <div class="profile-item">
-      <span class="label">Role:</span> {{ user.role }}
-    </div>
-    <div class="profile-item">
-      <span class="label">Created At:</span> {{ user.created_at or "N/A" }}
-    </div>
-  </div>
 
-   <form action="{{ url_for('update_user', user_id=user.id) }}" method="post" id="userForm">
-        <label for="name">First Name:
-            <input type="text" id="name" name="name" value="{{ user.name }}" required />
-        </label>
+        <h2>Salary History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Total Salary</th>
+                    <th>hourly rate</th>
+                    <th>total hour</th>
+                    <th>total min</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in salaries %}
+                <tr>
+                    <td>{{ s.year }}</td>
+                    <td>{{ s.month }}</td>
+                    <td>{{ s.hourly_rate }}</td>
+                    <td>{{ s.total_hour }}</td>
+                    <td>{{ s.total_min }}</td>
+                    <td>{{ s.total_salary }}</td>
+                    <td>
+                        <button type="button" onclick="showEditForm(
+        '{{ s.id }}',
+        '{{ s.year }}',
+        '{{ s.month }}',
+        '{{ s.hourly_rate }}',
+        '{{ s.total_min }}',
+        '{{ s.total_hour }}'
+      )">Edit</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        <label for="family">Last Name:
-            <input type="text" id="family" name="family" value="{{ user.family }}" required />
-        </label>
+        <div id="editSalaryForm" class="edit-form">
+            <h3>Edit Salary</h3>
+            <form action="#" method="post" id="updateSalaryForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <input type="hidden" name="salary_id" id="edit_salary_id">
 
-        <label for="role">Role:
-            <select id="role" name="role" required>
-                <option value="">Select role</option>
-                <option value="Manager" {% if user.role == "Manager" %}selected{% endif %}>Manager</option>
-                <option value="Developer" {% if user.role == "Developer" %}selected{% endif %}>Developer</option>
-            </select>
-        </label>
+                <label>Year: <input type="number" name="year" id="edit_year" min="2000" max="2100" required></label>
+                <label>Month: <input type="number" name="month" id="edit_month" min="1" max="12" required></label>
+                <label>Hourly Rate: <input type="number" name="hourly_rate" id="edit_hourly_rate" step="0.01"
+                        required></label>
+                <label>Total Minutes: <input type="number" name="total_min" id="edit_total_min" min="0"
+                        required></label>
+                <label>Total Hours: <input type="number" name="total_hour" id="edit_total_hour" step="0.01"
+                        required></label>
 
-        <button type="submit">Update User</button>
-    </form>
+                <button type="submit">Update Salary</button>
+                <button type="button" onclick="hideEditForm()">Cancel</button>
+            </form>
+            </div>
 
-     <h2>Salary</h2>
-    <p>Current Salary: {{ salary or "Not set" }}</p>
-    <h2>Set Salary</h2>
-<form action="{{ url_for('add_salary') }}" method="post" id="salaryForm">
-    <!-- Hidden user_id -->
-    <input type="hidden" name="user_id" value="{{ user.id }}">
+    <a href="{{ url_for('get_all_users') }}">← Back to user list</a>
 
-    <label for="year">Year:
-        <input type="number" id="year" name="year" min="2000" max="2100" required>
-    </label>
+    <script>
+        document.getElementById("userForm").addEventListener("submit", function(e) { e.preventDefault(); const formData = new FormData(this); const jsonData = Object.fromEntries(formData.entries()); fetch("{{ request.url_for('update_user', user_id=user.id) }}", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(jsonData) }) .then(() => { window.location.href = "{{ request.url_for('get_one_user', user_id=user.id) }}"; }); });
+        function toggleSection(id) {
+            document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-    <label for="month">Month:
-        <input type="number" id="month" name="month" min="1" max="12" required>
-    </label>
+        function showEditForm(id, year, month, hourly_rate, total_min, total_hour) {
+            document.getElementById('edit_salary_id').value = id;
+            document.getElementById('edit_year').value = year;
+            document.getElementById('edit_month').value = month;
+            document.getElementById('edit_hourly_rate').value = hourly_rate;
+            document.getElementById('edit_total_min').value = total_min;
+            document.getElementById('edit_total_hour').value = total_hour;
 
-    <label for="hourly_rate">Hourly Rate:
-        <input type="number" id="hourly_rate" name="hourly_rate" step="0.01" required>
-    </label>
+            const form = document.getElementById('updateSalaryForm');
+            form.action = `/salaries/update-salary/${id}`;
 
-    <label for="total_min">Total Minutes:
-        <input type="number" id="total_min" name="total_min" min="0" required>
-    </label>
+            document.getElementById('editSalaryForm').style.display = 'block';
+            document.getElementById('editSalaryForm').scrollIntoView({ behavior: 'smooth' });
+        }
 
-    <label for="total_hour">Total Hours:
-        <input type="number" id="total_hour" name="total_hour" step="0.01" required>
-    </label>
-     <button type="submit">Save Salary</button>
-</form>
-
-  <a href="{{ url_for('get_all_users') }}">← Back to user list</a>
+        function hideEditForm() {
+            document.getElementById('editSalaryForm').style.display = 'none';
+        }
+    </script>
 </body>
-<script>
-document.getElementById("userForm").addEventListener("submit", function(e) {
-    e.preventDefault();
 
-    const formData = new FormData(this);
-    const jsonData = Object.fromEntries(formData.entries());
-
-    fetch("{{ request.url_for('update_user', user_id=user.id) }}", {
-        method: "POST", 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonData)
-    })
-    .then(() => {
-        window.location.href = "{{ request.url_for('get_one_user', user_id=user.id) }}";
-    });
-});
-</script>
 </html>

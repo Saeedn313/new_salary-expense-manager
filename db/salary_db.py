@@ -117,3 +117,54 @@ class SalaryDb(BaseDb):
         cursor = self.conn.cursor()
         row = cursor.execute(f"SELECT * FROM {self.table_name} WHERE user_id=?", (user_id,)).fetchone()
         return row["total_salary"] if row else None
+    
+    def get_salary_by_year_month(self, user_id, year, month):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT * FROM {self.table_name} WHERE user_id=? year=? month=?", (user_id, year, month))
+
+        return (row['total_salary'], row['year'], row['month'])
+
+    def get_salary(self, user_id: int, year: int = None, month: int = None):
+        cursor = self.conn.cursor()
+        
+        if year is not None and month is not None:
+            row = cursor.execute(
+                f"SELECT * FROM {self.table_name} WHERE user_id=? AND year=? AND month=?"
+                , (user_id, year, month)
+                ).fetchone()
+        else:
+            row = cursor.execute(
+                f"SELECT * FROM {self.table_name} WHERE user_id=? ORDER BY year DESC, month DESC LIMIT 1"
+                , (user_id)
+                ).fetchone()
+            
+        if row is None:
+            return None
+
+        return SalaryOut(
+            user_id = row["user_id"],
+            year = row["year"],
+            month = row["month"],
+            hourly_rate = row["hourly_rate"],
+            total_min = row["total_min"],
+            total_hour = row["total_hour"],
+            total_salary = row["total_salary"],
+            id = row["salary_id"]
+        )
+
+    def get_user_all_salary(self, user_id):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(f"SELECT * FROM {self.table_name} WHERE user_id=?", (user_id,)).fetchall()
+        if rows is None:
+            return None
+
+        return [SalaryOut(user_id = row["user_id"],
+            year = row["year"],
+            month = row["month"],
+            hourly_rate = row["hourly_rate"],
+            total_min = row["total_min"],
+            total_hour = row["total_hour"],
+            total_salary = row["total_salary"],
+            id = row["salary_id"]) for row in rows]   
+        
+

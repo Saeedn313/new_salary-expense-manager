@@ -37,9 +37,10 @@ def get_one_user(user_id: int, request: Request):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no user found")
         
         salary = salary_db.get_latest_salary(user_id)
+        salaries = salary_db.get_user_all_salary(user_id)
 
         user_out = UserOut(**user.to_dict())
-        return templates.TemplateResponse("user_profile.html", {"request": request, "user": user_out, "salary": salary})
+        return templates.TemplateResponse("user_profile.html", {"request": request, "user": user_out, "salary": salary, "salaries": salaries})
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
