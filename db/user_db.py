@@ -1,6 +1,7 @@
 from config import DB_FILE
 from .base_db import BaseDb
-from models.users import Developer, Manager
+from models.db_models.users import Developer, Manager
+from datetime import datetime
 
 
 
@@ -17,7 +18,7 @@ class UserDb(BaseDb):
                 'name': 'TEXT NOT NULL',
                 'family': 'TEXT NOT NULL',
                 'role': 'TEXT NOT NULL',
-                'created_at': 'TEXT DEFAULT CURRENT_TIMESTAMP'
+                'created_at': 'TEXT'
             }
             cursor.execute(self.create_tables(self.table_name, cols))
             self.conn.commit()
@@ -25,15 +26,16 @@ class UserDb(BaseDb):
 
     def add_user(self, user_dict: dict):
         user_obj = self.map_role[user_dict["role"]]
-        user = user_obj(name= user_dict["name"], family=user_dict["family"])
+        time_stamp = datetime.now().strftime("%I:%M%p on %B %d, %Y")
+        user = user_obj(name= user_dict["name"], family=user_dict["family"], created_at=time_stamp)
 
         cursor = self.conn.cursor()
         columns = ["name", "family", "role", "created_at"]
         cursor.execute(self.add(self.table_name, columns), (user.name, user.family, user.role, user.created_at))
         user.id = cursor.lastrowid
         self.conn.commit()
-
-        return UserOut(name=user.name, family= user.family, role= user.role, id= user.id, created_at=user.created_at)
+        
+        return user
     
     def get_all_users(self):
         cursor = self.conn.cursor()
@@ -42,7 +44,7 @@ class UserDb(BaseDb):
         all_users = []
         for row in rows:
             user_role = self.map_role[row["role"]]
-            user = user_role(name=row["name"], family=row["family"], id=row['user_id'])
+            user = user_role(name=row["name"], family=row["family"], id=row['user_id'], created_at=row["created_at"])
             all_users.append(user)
 
         return all_users
@@ -53,7 +55,7 @@ class UserDb(BaseDb):
         row = cursor.execute(self.fetch_one(self.table_name, "user_id"), (user_id,)).fetchone()
 
         user_obj = self.map_role[row["role"]]
-        user = user_obj(name=row["name"], family=row["family"], id=row["user_id"])
+        user = user_obj(name=row["name"], family=row["family"], id=row["user_id"], created_at=row["created_at"])
 
         return user if user is not None else None
     

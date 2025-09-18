@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, status, Form
+from fastapi import APIRouter, HTTPException, status
 from db.salary_db import SalaryDb
-from models.users import SalaryIn, SalaryOut
+from models.api_models.salary_schema import SalaryIn
 from db.user_db import UserDb
-from models.users import User
+from models.db_models.users import User
 
 
 router = APIRouter(prefix="/salaries", tags=["salaries"])
@@ -12,20 +12,21 @@ salary_db.create_salary_tables()
 
 
 @router.post('/add-salary')
-def add_salary(user_id: int = Form(...), year: int = Form(...), month: int = Form(...), hourly_rate: float = Form(...), total_min: int = Form(...), total_hour: int = Form(...)):
+def add_salary(salary: SalaryIn):
     try:
-        user: User = user_db.get_one_user(user_id=user_id)
+        print(salary.dict())
+        user: User = user_db.get_one_user(user_id=salary.user_id)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
         
-        salary_exist = salary_db.get_salary(user_id=user_id, year=year, month=month)
+        salary_exist = salary_db.get_salary(user_id=salary.user_id, year=salary.year, month=salary.month)
         if salary_exist is not None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Salary for {year}-{month} already exists for this user")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Salary for {salary.year}-{salary.month} already exists for this user")
         
-        salary = user.calc_salary(hourly_rate=hourly_rate, total_hour=total_hour, total_min=total_min)
-        salary_dict = {"user_id": user_id, "year": year, "month": month, "hourly_rate": hourly_rate, "total_min": total_min, "total_hour": total_hour, "total_salary": salary}
-        salary_db.add_salary(salary_dict=salary_dict)
-        return {"detail": "salary_added"}
+        user_salary = user.calc_salary(hourly_rate=salary.hourly_rate, total_hour=salary.total_hour, total_min=salary.total_min)
+        salary_dict = {"user_id": salary.user_id, "year": salary.year, "month": salary.month, "hourly_rate": salary.hourly_rate, "total_min": salary.total_min, "total_hour": salary.total_hour, "total_salary": user_salary}
+        new_salary = salary_db.add_salary(salary_dict=salary_dict)
+        return {"detail": new_salary}
     
     except HTTPException:
         raise
@@ -50,14 +51,14 @@ def delete_salary(salary_id: int):
 
 
 @router.post("/update-salary/{salary_id}")
-def update_salary(salary_id: int, user_id: int = Form(...), year: int = Form(...), month: int = Form(...), hourly_rate: float = Form(...), total_min: int = Form(...), total_hour: int = Form(...)):
+def update_salary(salary_id: int, salary: SalaryIn):
     try:
-        user: User = user_db.get_one_user(user_id=user_id)
+        user: User = user_db.get_one_user(user_id=salary.user_id)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
         
-        salary: float = user.calc_salary(hourly_rate=hourly_rate, total_hour=total_hour, total_min=total_min)
-        salary_dict = {"user_id": user_id, "year": year, "month": month, "hourly_rate": hourly_rate, "total_min": total_min, "total_hour": total_hour, "total_salary": salary}
+        user_salary: float = user.calc_salary(hourly_rate=salary.hourly_rate, total_hour=salary.total_hour, total_min=salary.total_min)
+        salary_dict = {"user_id": salary.user_id, "year": salary.year, "month": salary.month, "hourly_rate": salary.hourly_rate, "total_min": salary.total_min, "total_hour": salary.total_hour, "total_salary": user_salary}
 
         updated = salary_db.update_salary(salary_id=salary_id, salary_dict=salary_dict)
         if not updated:

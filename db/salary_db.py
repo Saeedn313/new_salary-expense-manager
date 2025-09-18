@@ -1,6 +1,6 @@
 from config import DB_FILE
 from .base_db import BaseDb
-from models.users import SalaryOut
+from models.api_models.salary_schema import SalaryOut
 
 # assuming there is no base model for salary. 
 # there is only pydantic models to be passed to fastapi.

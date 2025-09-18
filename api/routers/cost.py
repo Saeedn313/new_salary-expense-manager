@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
 from db.cost_db import CostDb
-from models.costs import CostIn
+from models.api_models.cost_schema import CostIn, CostOut
 import os
 
 router = APIRouter(prefix="/costs", tags=["costs"])
@@ -11,23 +10,28 @@ cost_db.create_cost_tables()
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
 
-@router.get("/", response_class=HTMLResponse)
-def get_all_costs(request: Request):
+@router.get("/")
+def get_all_costs():
     try:
         costs = cost_db.get_all_costs()
         if len(costs) < 1:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No cost found!")
-        return templates.TemplateResponse("costs.html", {"request": request, "costs": costs})
+        costs_out = [CostOut(**cost.to_dict()) for cost in costs]
+        return {"costs": costs_out}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
     
-@router.get("/{cost_id}", response_class=HTMLResponse)
-def get_one_user(cost_id: int, request: Request):
+@router.get("/{cost_id}")
+def get_one_user(cost_id: int):
     try:
         cost = cost_db.get_one_cost(cost_id)
         if cost == None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no cost found")
-        return templates.TemplateResponse("user_profile.html", {"request": request, "cost": cost})
+        
+        cost_out = CostOut(**cost.to_dict())
+        return {"cost": cost_out}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
@@ -35,8 +39,9 @@ def get_one_user(cost_id: int, request: Request):
 @router.post("/add-cost")
 def add_new_cost(cost: CostIn):
     try:
-        cost_db.add_cost(cost.dict())
-        return RedirectResponse(url="/costs", status_code=status.HTTP_303_SEE_OTHER)
+        new_cost = cost_db.add_cost(cost.dict())
+        cost_out = CostOut(**new_cost.to_dict())
+        return {"cost": cost_out}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
@@ -46,7 +51,7 @@ def delete_cost(cost_id: int):
         deleted = cost_db.delete_cost(cost_id)
         if not deleted:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No cost found to delete!")
-        return RedirectResponse(url="/costs", status_code=status.HTTP_303_SEE_OTHER)
+        return {"message": f"Cost with id {cost_id} is deleted!"}
     except HTTPException:
         raise
     except Exception as e:
@@ -54,12 +59,12 @@ def delete_cost(cost_id: int):
     
 @router.post("/update-cost/{cost_id}")
 def update_cost(cost_id: int, cost: CostIn):
-    print(cost)
+    print(cost.dict())
     try:
         updated = cost_db.update_cost(cost_id, cost.dict())
         if not updated:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found to update!")
-        return RedirectResponse(url="/costs", status_code=status.HTTP_303_SEE_OTHER)
+        return {"message": f"Cost with id {cost_id} is updated!"}
     
     except HTTPException:
         raise
