@@ -8,7 +8,7 @@ import os
 
 
 # tags is used for /docs in fastapi
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/api/users", tags=["users"])
 user_db = UserDb()
 salary_db = SalaryDb()
 user_db.create_user_tables()
@@ -52,7 +52,7 @@ def add_new_user(user: UserIn):
         raise HTTPException(status_code=500, detail=f"{e}")
 
 
-@router.post('/delete-user/{user_id}')
+@router.delete('/delete-user/{user_id}')
 def delete_user(user_id: int):
     try:
         deleted = user_db.delete_user(user_id)

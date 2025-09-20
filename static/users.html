@@ -1,0 +1,34 @@
+
+    <h1>This is users page</h1>
+    <h3>ALL USERS</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Family</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody id="user-list">
+        </tbody>
+        </table>
+<h3>Add user form</h3>
+<form id="add-user-form">
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" placeholder="Name" required />
+
+  <label for="family">Family:</label>
+  <input type="text" id="family" name="family" placeholder="Family" required />
+
+  <label for="role">Role:</label>
+  <select id="role" name="role" required>
+    <option value="">Select Role</option>
+    <option value="Manager">Manager</option>
+    <option value="Developer">Developer</option>
+  </select>
+
+  <button type="submit">Add User</button>
+</form>
+
+

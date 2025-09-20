@@ -4,7 +4,7 @@ from db.cost_db import CostDb
 from models.api_models.cost_schema import CostIn, CostOut
 import os
 
-router = APIRouter(prefix="/costs", tags=["costs"])
+router = APIRouter(prefix="/api/costs", tags=["costs"])
 cost_db = CostDb()
 cost_db.create_cost_tables()
 
@@ -45,7 +45,7 @@ def add_new_cost(cost: CostIn):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
 
-@router.post("/delete-cost/{cost_id}")
+@router.delete("/delete-cost/{cost_id}")
 def delete_cost(cost_id: int):
     try:
         deleted = cost_db.delete_cost(cost_id)

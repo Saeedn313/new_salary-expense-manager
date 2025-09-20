@@ -5,7 +5,7 @@ from db.user_db import UserDb
 from models.db_models.users import User
 
 
-router = APIRouter(prefix="/salaries", tags=["salaries"])
+router = APIRouter(prefix="/api/salaries", tags=["salaries"])
 salary_db = SalaryDb()
 user_db = UserDb()
 salary_db.create_salary_tables()

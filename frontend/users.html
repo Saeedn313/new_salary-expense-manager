@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User list</title>
-</head>
-<body>
+
+
     <h1>ALL USERS</h1>
     <table>
         <caption>Users</caption>
@@ -17,61 +11,5 @@
                 <th>Role</th>
             </tr>
         </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td><a href="{{ url_for('get_one_user', user_id=user.id) }}">{{ loop.index }}</a></td>
-                <td>{{ user.name }}</td>
-                <td>{{ user.family }}</td>
-                <td>{{ user.role }}</td>
-                <td>
-                    <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post">
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <h2>Add New User</h2>
-  <form action="{{ url_for('add_new_user') }}" method="post" id="userForm">
-    <label for="name">First Name:
-      <input type="text" id="name" name="name" required />
-    </label>
+        </table>
 
-    <label for="family">Last Name:
-      <input type="text" id="family" name="family" required />
-    </label>
-
-    <label for="role">Role:
-      <select id="role" name="role" required>
-        <option value="">Select role</option>
-        <option value="Manager">Manager</option>
-        <option value="Developer">Developer</option>
-      </select>
-    </label>
-
-    <button type="submit">Add User</button>
-  </form>
-</body>
-<script>
-document.getElementById("userForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-  const json = Object.fromEntries(formData.entries());
-
-  fetch("/users/add-user", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(json)
-  })
-  .then(res => {
-    if (res.redirected) {
-      window.location.href = res.url; // follow redirect manually
-    }
-  });
-});
-
-</script>
-</html>

@@ -1,6 +1,6 @@
 from config import DB_FILE
 from .base_db import BaseDb
-from models.db_models.costs import Cost, CostOut
+from models.db_models.costs import Cost
 
 class CostDb(BaseDb):
     def __init__(self):
