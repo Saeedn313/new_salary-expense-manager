@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
-from fastapi.templating import Jinja2Templates
 from models.api_models.user_schema import UserIn, UserOut
 from db.user_db import UserDb
 from db.salary_db import SalaryDb
-import os
+
 
 
 
@@ -13,8 +12,13 @@ user_db = UserDb()
 salary_db = SalaryDb()
 user_db.create_user_tables()
 
-templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
 
+@router.get("/summery")
+def summery():
+    user_count = user_db.get_total_users()
+    user_by_role = user_db.get_user_by_role()
+    
+    return {"data": {"user_count": user_count, "user_by_role": user_by_role}}
 
 @router.get("/")
 def get_all_users():
@@ -76,3 +80,9 @@ def update_user(user_id: int, user: UserIn):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+
+
+    

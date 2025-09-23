@@ -1,14 +1,25 @@
 from fastapi import APIRouter, HTTPException, status
-from fastapi.templating import Jinja2Templates
 from db.cost_db import CostDb
 from models.api_models.cost_schema import CostIn, CostOut
-import os
+
 
 router = APIRouter(prefix="/api/costs", tags=["costs"])
 cost_db = CostDb()
 cost_db.create_cost_tables()
 
-templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+
+@router.get("/summery")
+def hello_world():
+    costs_summery = cost_db.get_costs_summery()
+    return {"summery": costs_summery}
+
+@router.get("/filter-costs")
+def filter_costs(start_year: int, end_year: int, start_month:int = None, end_month: int = None):
+    filtered_costs = cost_db.get_cost_within_year_month(start_year, end_year, start_month, end_month)
+    
+    if not filtered_costs:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No result found!")
+    return {"data": filtered_costs}
 
 @router.get("/")
 def get_all_costs():
@@ -71,5 +82,9 @@ def update_cost(cost_id: int, cost: CostIn):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+    
+
     
 

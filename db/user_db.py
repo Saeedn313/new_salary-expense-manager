@@ -53,11 +53,13 @@ class UserDb(BaseDb):
     def get_one_user(self, user_id):
         cursor = self.conn.cursor()
         row = cursor.execute(self.fetch_one(self.table_name, "user_id"), (user_id,)).fetchone()
+        
+        if row:
+            user_obj = self.map_role[row["role"]]
+            user = user_obj(name=row["name"], family=row["family"], id=row["user_id"], created_at=row["created_at"])
 
-        user_obj = self.map_role[row["role"]]
-        user = user_obj(name=row["name"], family=row["family"], id=row["user_id"], created_at=row["created_at"])
-
-        return user if user is not None else None
+            return user
+        return None
     
     def delete_user(self, user_id: int):
         cursor = self.conn.cursor()
@@ -78,3 +80,17 @@ class UserDb(BaseDb):
         self.conn.commit()
 
         return cursor.rowcount > 0
+    
+    def get_total_users(self):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT COUNT(*) AS total_user FROM {self.table_name}").fetchone()
+        return row
+    
+    def get_user_by_role(self):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(f"SELECT role, COUNT(role) AS total_user FROM {self.table_name} GROUP BY role").fetchall()
+        
+        users_by_role = [{"role": row["role"], "total_user": row['total_user']} for row in rows]
+        return users_by_role
+    
+    

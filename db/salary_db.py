@@ -167,4 +167,16 @@ class SalaryDb(BaseDb):
             total_salary = row["total_salary"],
             id = row["salary_id"]) for row in rows]   
         
+    def get_total_salary(self):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT SUM(amount) AS total_spend, AVG(amount) AS avrage_spend, MIN(amount) AS lowest_spend, MAX(amount) AS highest_spend FROM {self.table_name}").fetchone()
+        
+        return {
+            "total_spend": row["total_spend"],
+            "avrage_spend": row["avrage_spend"],
+            "lowest_spend": row["lowest_spend"],
+            "highest_spend": row["highest_spend"]
+        }
+    
+    
 

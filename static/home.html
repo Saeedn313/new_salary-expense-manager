@@ -1,1 +1,75 @@
-<h1>this is home page</h1>
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2em;
+      color: #333;
+    }
+    .metric {
+      font-size: 1.5em;
+      color: #0077cc;
+      margin: 10px 0;
+    }
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .list li {
+      margin: 5px 0;
+    }
+  </style>
+
+<h1>📊 System Summary Dashboard</h1>
+
+<div class="grid">
+  <!-- Users Summary -->
+  <div class="card">
+  <h2>👤 Users</h2>
+  <div class="metric" id="total-users">Total Users: ...</div>
+  <ul class="list" id="roles-list">
+    <!-- Roles will be inserted here -->
+  </ul>
+</div>
+
+  <!-- Costs Summary -->
+  <div class="card">
+  <h2>💰 Costs</h2>
+  <div class="metric" id="total-spend">Total Spend: ...</div>
+  <ul class="list">
+    <li id="avg-spend">Avg Monthly Spend: ...</li>
+    <li id="top-cost">Top Cost: ...</li>
+    <li id="lowest-cost">Lowest Cost: ...</li>
+  </ul>
+</div>
+  <!-- Salary Summary -->
+  <div class="card">
+    <h2>🧑‍💼 Salaries</h2>
+    <div class="metric">Total Paid: $18,300</div>
+    <ul class="list">
+      <li>Total Hours: 920</li>
+      <li>Avg Hourly Rate: $42.50</li>
+      <li>Top Earner: Reza Hossein ($4,500)</li>
+    </ul>
+  </div>
+</div>

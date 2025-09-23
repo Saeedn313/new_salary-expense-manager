@@ -63,3 +63,47 @@ class CostDb(BaseDb):
         cursor.execute(self.update(self.table_name, columns, "cost_id"), (cost.description, cost.amount, cost.year, cost.month, cost.id))
 
         return cursor.rowcount > 0
+    
+    def get_costs_summery(self):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT COUNT(*) AS total_costs, SUM(amount) AS total_spend, AVG(amount) AS avrage_spend, MIN(amount) AS lowest_spend, MAX(amount) AS highest_spend FROM {self.table_name}").fetchone()
+        
+        return {
+            "total_costs": row["total_costs"],
+            "total_spend": row["total_spend"],
+            "avrage_spend": row["avrage_spend"],
+            "lowest_spend": row["lowest_spend"],
+            "highest_spend": row["highest_spend"]
+        }
+        
+    def get_costs_by_year(self, year: int):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(f"SELECT year, SUM(amount) AS total_spend FROM {self.table_name} WHERE year=? GROUP BY year ORDER BY year DESC", (year,)).fetchall()
+        
+        year_summery = [{"year": row["year"], "total_spend": row["total_spend"]} for row in rows]
+        
+        return year_summery
+    
+    def get_cost_by_month(self, month:int ):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(f"SELECT month, SUM(amount) AS total_spend FROM {self.table_name} WHERE month=? GROUP BY month ORDERBY month DESC", (month,)).fetchall()
+        
+        month_summery = [{"month": row["month"], "total_spend": row["total_spend"]} for row in rows]
+        return month_summery
+    
+    def get_cost_within_year_month(self, start_year: int, end_year:int, start_month: int = None, end_month:int = None):
+        cursor = self.conn.cursor()
+        if start_month and end_month:
+            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
+        else:
+            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month",(start_year, start_month)).fetchall()
+        
+        year_month_summery = [{"year": row["year"], "month": row["month"], "total_spend": row["total_spend"]} for row in rows]
+        return year_month_summery  
+    
+    def get_avg_month_year(self, month, year):
+        cursor = self.conn.cursor()
+        row = cursor.execute(f"SELECT year, month, AVG(amount) avg_spend FROM costs WHERE year=? AND month=?", (year, month)).fetchone()
+        
+        month_avg = {"year": row["year"], "month": row["month"], "avg_spend": row["avg_spend"]}
+        return month_avg

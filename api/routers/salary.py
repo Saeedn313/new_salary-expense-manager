@@ -34,6 +34,25 @@ def add_salary(salary: SalaryIn):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
     
+@router.get("/{user_id}")
+def get_user_salary(user_id: int):
+    try:
+        user: User = user_db.get_one_user(user_id)
+        # print(user)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        user_salaries = salary_db.get_user_all_salary(user_id)
+        if len(user_salaries) < 1:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No salary found!")
+        
+        return {"salaries": user_salaries}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
+    
+    
 
 @router.post("/delete-salary/{salary_id}")
 def delete_salary(salary_id: int):

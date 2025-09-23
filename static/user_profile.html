@@ -1,4 +1,81 @@
 <h2>User Profle info</h2>
+
 <div id="user-profile"></div>
-<div id="user-action"></div>
-<a href="/users"onclick="route(event)">← Back to Users</a>
+<div id="user-action">
+  <form id="update-user-form">
+    <input type="hidden" name="user_id" id="update_user_id" />
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" placeholder="Name" required />
+
+    <label for="family">Family:</label>
+    <input
+      type="text"
+      id="family"
+      name="family"
+      placeholder="Family"
+      required
+    />
+
+    <label for="role">Role:</label>
+    <select id="role" name="role" required>
+      <option value="">Select Role</option>
+      <option value="Manager">Manager</option>
+      <option value="Developer">Developer</option>
+    </select>
+
+    <button type="submit">Update User</button>
+  </form>
+
+  <h3>add salary</h3>
+  <form id="add-salary-form">
+    <input type="hidden" name="user_id" id="salary_user_id" />
+    <label
+      >Year: <input type="number" name="year" min="2000" max="2100" required
+    /></label>
+    <label
+      >Month: <input type="number" name="month" min="1" max="12" required
+    /></label>
+    <label
+      >Hourly Rate:
+      <input type="number" name="hourly_rate" required
+    /></label>
+    <label
+      >Total Minutes: <input type="number" name="total_min" min="0" required
+    /></label>
+    <label
+      >Total Hours: <input type="number" name="total_hour" required
+    /></label>
+    <button type="submit">Save Salary</button>
+  </form>
+</div>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Year</th>
+      <th>Month</th>
+      <th>hourly rate</th>
+      <th>total hour</th>
+      <th>total min</th>
+      <th>total salary</th>
+    </tr>
+  </thead>
+  <tbody id="salary_list"></tbody>
+</table>
+<div id="edit-salary-form" style="display: none;">
+<h3>Edit slaray</h3>
+  <form id="update-salary-form">
+    <input type="hidden" name="salary_id" id="edit_salary_id">
+    <input type="hidden" name="user_id" id="edit_user_id">
+
+    <label for="year">Year: <input type="text" name="year" id="edit_year" required></label>
+    <label for="month">Month: <input type="number" name="month" id="edit_month" required></label>
+    <label for="hourly_rate">Hourly rate: <input type="number" name="hourly_rate" id="edit_hourly_rate" required></label>
+    <label for="total_hour">Total hour <input type="number" name="total_hour" id="edit_total_hour" required></label>
+    <label for="total_min">Total min <input type="number" name="total_min" id="edit_total_min" required></label>
+
+    <button type="submit">Update</button>
+    <button type="button" onclick="hideEditForm()">Cancel</button>
+  </form>
+</div>
+<a href="/users" onclick="route(event)">← Back to Users</a>

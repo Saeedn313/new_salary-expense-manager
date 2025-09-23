@@ -21,6 +21,57 @@ const handleLocation = async () => {
   const html = await fetch(route).then((data) => data.text());
   document.getElementById("app").innerHTML = html;
 
+  if (path == "/") {
+    try {
+      const res = await fetch("/api/users/summery");
+      const json = await res.json();
+      const data = json.data;
+
+      const totalUsersEl = document.getElementById("total-users");
+      if (totalUsersEl) {
+        totalUsersEl.textContent = `Total Users: ${data.user_count.total_user}`;
+      }
+
+      const roleListEl = document.getElementById("roles-list");
+      if (roleListEl) {
+        roleListEl.innerHTML = "";
+        data.user_by_role.forEach((role) => {
+          const li = document.createElement("li");
+          li.textContent = `${role.role}: ${role.total_user}`;
+          roleListEl.appendChild(li);
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching user summary:", err);
+    }
+    try {
+      const res = await fetch("/api/costs/summery");
+      const json = await res.json();
+      const data = json.summery;
+      console.log(data);
+
+      const format = (num) => num.toLocaleString("en-US");
+
+      document.getElementById(
+        "total-spend"
+      ).textContent = `Total Spend: ${format(data.total_spend)}`;
+
+      document.getElementById(
+        "avg-spend"
+      ).textContent = `Avg Monthly Spend: ${format(data.avrage_spend)}`;
+
+      document.getElementById("top-cost").textContent = `Top Cost: ${format(
+        data.highest_spend
+      )}`;
+
+      document.getElementById(
+        "lowest-cost"
+      ).textContent = `Lowest Cost: ${format(data.lowest_spend)}`;
+    } catch (err) {
+      console.error("Error fetching cost summary:", err);
+    }
+  }
+
   if (path === "/users") {
     // Load all users
     try {
@@ -224,27 +275,208 @@ const handleLocation = async () => {
   }
 
   if (userId) {
-    // Load specific user profile
     try {
+      // Fetch and render user profile
       const res = await fetch(`/api/users/${userId}`);
       const data = await res.json();
       const user = data.user;
-      console.log(user);
 
       const profile = document.getElementById("user-profile");
       profile.innerHTML = `
-        <p><strong>ID:</strong> ${user.id}</p>
-        <p><strong>Name:</strong> ${user.name}</p>
-        <p><strong>Family:</strong> ${user.family}</p>
-        <p><strong>Role:</strong> ${user.role}</p>
-      `;
+      <p><strong>ID:</strong> ${user.id}</p>
+      <p><strong>Name:</strong> ${user.name}</p>
+      <p><strong>Family:</strong> ${user.family}</p>
+      <p><strong>Role:</strong> ${user.role}</p>
+    `;
 
-      // Later you can add forms to #user-actions
+      // Pre-fill update form
+      document.getElementById("update_user_id").value = userId;
+      document.getElementById("name").value = user.name || "";
+      document.getElementById("family").value = user.family || "";
+      document.getElementById("role").value = user.role || "";
+
+      // Update user form submit
+      document
+        .getElementById("update-user-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const json = Object.fromEntries(formData.entries());
+          const updateUserId = json.user_id;
+
+          try {
+            const res = await fetch(`/api/users/update-user/${updateUserId}`, {
+              method: "POST",
+              headers: { "Content-type": "application/json" },
+              body: JSON.stringify(json),
+            });
+
+            if (res.ok) {
+              window.history.pushState({}, "", `/users/${userId}`);
+              handleLocation();
+            } else {
+              console.error("Failed to update user", await res.text());
+            }
+          } catch (err) {
+            console.error("Error updating user", err);
+          }
+        });
+
+      // Add salary form submit
+      document.getElementById("salary_user_id").value = userId;
+      document
+        .getElementById("add-salary-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const json = Object.fromEntries(formData.entries());
+
+          try {
+            const res = await fetch("/api/salaries/add-salary", {
+              method: "POST",
+              headers: { "Content-type": "application/json" },
+              body: JSON.stringify(json),
+            });
+
+            if (res.ok) {
+              window.history.pushState({}, "", `/users/${userId}`);
+              handleLocation();
+            } else {
+              console.error("Failed to add salary", await res.text());
+            }
+          } catch (err) {
+            console.error("Error adding salary", err);
+          }
+        });
+
+      // Fetch and render salaries in a separate try/catch
+      try {
+        const salaryRes = await fetch(`/api/salaries/${userId}`);
+        if (!salaryRes.ok) throw new Error(await salaryRes.text());
+
+        const salaryData = await salaryRes.json();
+        const salaries = Array.isArray(salaryData)
+          ? salaryData
+          : salaryData.salaries;
+
+        const list = document.getElementById("salary_list");
+        let html = "";
+
+        salaries.forEach((salary) => {
+          html += `
+    <tr>
+      <td>${salary.year}</td>
+      <td>${salary.month}</td>
+      <td>${salary.hourly_rate}</td>
+      <td>${salary.total_hour}</td>
+      <td>${salary.total_min}</td>
+      <td>${salary.total_salary}</td>
+      <td>
+        <button data-id="${salary.id}" class="delete-salary-btn">Delete</button>
+        <button class="edit-salary-btn"
+          data-salary-id="${salary.id}"
+          data-user-id="${salary.user_id}"
+          data-year="${salary.year}"
+          data-month="${salary.month}"
+          data-hourly-rate="${salary.hourly_rate}"
+          data-total-hour="${salary.total_hour}"
+          data-total-min="${salary.total_min}"
+        >Edit</button>
+      </td>
+    </tr>
+  `;
+        });
+
+        list.innerHTML = html;
+
+        document.querySelectorAll(".edit-salary-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.getElementById("edit_salary_id").value =
+              btn.dataset.salaryId;
+            document.getElementById("edit_user_id").value = btn.dataset.userId;
+            document.getElementById("edit_year").value = btn.dataset.year;
+            document.getElementById("edit_month").value = btn.dataset.month;
+            document.getElementById("edit_hourly_rate").value =
+              btn.dataset.hourlyRate;
+            document.getElementById("edit_total_hour").value =
+              btn.dataset.totalHour;
+            document.getElementById("edit_total_min").value =
+              btn.dataset.totalMin;
+
+            document.getElementById("edit-salary-form").style.display = "block";
+          });
+        });
+
+        window.hideEditForm = function () {
+          document.getElementById("edit-salary-form").style.display = "none";
+          document.getElementById("update-salary-form").reset();
+        };
+
+        document
+          .getElementById("update-salary-form")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const json = Object.fromEntries(formData.entries());
+            const salaryId = json.salary_id;
+
+            try {
+              const res = await fetch(
+                `/api/salaries/update-salary/${salaryId}`,
+                {
+                  method: "POST",
+                  headers: { "Content-type": "application/json" },
+                  body: JSON.stringify(json),
+                }
+              );
+
+              if (res.ok) {
+                window.history.pushState({}, "", `/users/${userId}`);
+                handleLocation();
+              } else {
+                console.error("Failed to update cost: ", await res.text());
+              }
+            } catch (err) {
+              console.error("Error updating cost", err);
+            }
+          });
+
+        // Attach delete handlers
+        document.querySelectorAll(".delete-salary-btn").forEach((btn) => {
+          btn.addEventListener("click", async function () {
+            const salaryId = this.getAttribute("data-id");
+
+            try {
+              const res = await fetch(
+                `/api/salaries/delete-salary/${salaryId}`,
+                {
+                  method: "POST",
+                }
+              );
+
+              if (res.ok) {
+                window.history.pushState({}, "", `/users/${userId}`);
+                handleLocation();
+              } else {
+                console.error("Failed to delete salary:", await res.text());
+              }
+            } catch (err) {
+              console.error("Error deleting salary:", err);
+            }
+          });
+        });
+      } catch (err) {
+        console.error("Error fetching salaries:", err);
+        document.getElementById("salary_list").innerHTML = `
+        <tr><td colspan="7">Failed to load salaries</td></tr>
+      `;
+      }
     } catch (err) {
       console.error("Error loading user profile:", err);
       document.getElementById("user-profile").innerHTML = `
-        <p>User not found</p>
-      `;
+      <p>User not found</p>
+    `;
     }
   }
 };
