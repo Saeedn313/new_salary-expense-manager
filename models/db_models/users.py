@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from jdatetime import datetime
 
 
 class User:
@@ -13,7 +13,7 @@ class User:
     
     def calc_salary(self, hourly_rate: float, total_hour: int, total_min: int) -> float:
         total_hours = (total_min / 60) + total_hour
-        return total_hours * hourly_rate
+        return round(total_hours * hourly_rate, 1)
     
     def to_dict(self):
         return {

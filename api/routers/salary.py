@@ -10,6 +10,45 @@ salary_db = SalaryDb()
 user_db = UserDb()
 salary_db.create_salary_tables()
 
+@router.get("/summery")
+def get_salary_summery():
+    try:
+        salaries_summery = salary_db.get_salary_summery()
+        salary_per_role = salary_db.get_salary_per_role()
+        summery_data = {"salaries_summery": salaries_summery, "salary_per_role": salary_per_role}
+        return summery_data
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
+    
+@router.get("/monthly-range")
+def filter_salary(start_year: int, end_year: int, start_month:int = None, end_month: int = None):
+    try:
+        if start_month and not end_month or not start_month and end_month:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start and end month both should be specified!")
+        filtered_costs = salary_db.get_cost_within_year_month(start_year, end_year, start_month, end_month)
+        
+        if filtered_costs is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No result found!")
+        return filtered_costs
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
+    
+@router.get("/per_month")
+def get_salary_per_month(year: int, month: int):
+    # try:
+        salary_per_month = salary_db.get_salary_per_month(year, month)
+        if salary_per_month is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No result found!")
+        return salary_per_month
+    
+    # except HTTPException:
+    #     raise
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"{e}")
+
+
 
 @router.post('/add-salary')
 def add_salary(salary: SalaryIn):
@@ -17,7 +56,7 @@ def add_salary(salary: SalaryIn):
         print(salary.dict())
         user: User = user_db.get_one_user(user_id=salary.user_id)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {salary.user_id} not found")
         
         salary_exist = salary_db.get_salary(user_id=salary.user_id, year=salary.year, month=salary.month)
         if salary_exist is not None:

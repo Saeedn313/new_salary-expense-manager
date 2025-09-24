@@ -22,7 +22,7 @@ class SalaryDb(BaseDb):
             "total_hour": "REAL NOT NULL",
             "total_salary": "REAL NOT NULL",
             "created_at": "TEXT DEFAULT CURRENT_TIMESTAMP",
-            "FOREIGN KEY(user_id)": "REFERENCES users(user_id)"
+            "FOREIGN KEY(user_id)": "REFERENCES users(user_id) ON DELETE CASCADE"
         }
         cursor.execute(self.create_tables(self.table_name, cols))
         self.conn.commit()
@@ -155,7 +155,7 @@ class SalaryDb(BaseDb):
     def get_user_all_salary(self, user_id):
         cursor = self.conn.cursor()
         rows = cursor.execute(f"SELECT * FROM {self.table_name} WHERE user_id=?", (user_id,)).fetchall()
-        if rows is None:
+        if not rows:
             return None
 
         return [SalaryOut(user_id = row["user_id"],
@@ -167,16 +167,84 @@ class SalaryDb(BaseDb):
             total_salary = row["total_salary"],
             id = row["salary_id"]) for row in rows]   
         
-    def get_total_salary(self):
+    # def get_total_salary(self):
+    #     cursor = self.conn.cursor()
+    #     row = cursor.execute(f"SELECT SUM(amount) AS total_spend, AVG(amount) AS avrage_spend, MIN(amount) AS lowest_spend, MAX(amount) AS highest_spend FROM {self.table_name}").fetchone()
+        
+    #     return {
+    #         "total_spend": row["total_spend"],
+    #         "avrage_spend": row["avrage_spend"],
+    #         "lowest_spend": row["lowest_spend"],
+    #         "highest_spend": row["highest_spend"]
+    #     }
+    
+    
+    def get_salary_summery(self):
         cursor = self.conn.cursor()
-        row = cursor.execute(f"SELECT SUM(amount) AS total_spend, AVG(amount) AS avrage_spend, MIN(amount) AS lowest_spend, MAX(amount) AS highest_spend FROM {self.table_name}").fetchone()
+        row = cursor.execute(f"SELECT SUM(total_salary) AS total_salary, SUM(total_hour) AS total_hour , AVG(hourly_rate) AS avg_hourly_rate, COUNT(*) AS total_record  FROM {self.table_name}").fetchone()
         
         return {
-            "total_spend": row["total_spend"],
-            "avrage_spend": row["avrage_spend"],
-            "lowest_spend": row["lowest_spend"],
-            "highest_spend": row["highest_spend"]
+            "total_salary": row["total_salary"],
+            "total_hour": row["total_hour"],
+            "avg_hourly_rate": row["avg_hourly_rate"],
+            "total_record": row["total_record"]
         }
+        
+ 
     
+    def get_salary_per_month(self, year: int, month: int):
+        cursor = self.conn.cursor()
+        rows = cursor.execute(
+            """
+            SELECT u.name, u.family, s.year, s.month, s.hourly_rate, s.total_salary
+            FROM salaries AS s
+            INNER JOIN users AS u ON u.user_id = s.user_id
+            WHERE s.year = ? AND s.month = ?
+            ORDER BY s.total_salary DESC
+            """,
+            (year, month)).fetchall()
+        
+        if not rows: 
+            return None
+        monthly_summery = [
+            {"name": row["name"],
+             "family":row["family"],
+             "year": row["year"],
+             "month": row["month"],
+             "hourly_rate": row["hourly_rate"],
+             "total_salary": row["total_salary"]
+             } for row in rows
+            ]
+        return monthly_summery
+    
+    def get_salary_per_role(self):
+        cursor = self.conn.cursor()
+        rows = cursor.execute("SELECT u.role, SUM(s.total_salary) AS total_salary, AVG(s.hourly_rate) AS avg_hourly_rate, SUM(s.total_hour) AS total_hour FROM salaries AS s INNER JOIN users AS u on u.user_id = s.user_id GROUP BY u.role").fetchall()
+        
+        if not rows:
+            return None
+        summery_per_role = [
+            {
+                "role": row["role"],
+                "total_salary": row["total_salary"],
+                "avg_hourly_rate": row["avg_hourly_rate"],
+                "total_hour": row["total_hour"]
+            } for row in rows
+        ]
+        return summery_per_role
+    
+    
+    def get_cost_within_year_month(self, start_year: int, end_year:int, start_month: int = None, end_month:int = None):
+        cursor = self.conn.cursor()
+        if start_month and end_month:
+            rows = cursor.execute(f"SELECT year, month , SUM(total_salary) AS total_salary FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
+        else:
+            rows = cursor.execute(f"SELECT year, month , SUM(total_salary) AS total_salary FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month",(start_year, end_year)).fetchall()
+            
+        if not rows:
+            return None
+        
+        year_month_summery = [{"year": row["year"], "month": row["month"], "total_salary": row["total_salary"]} for row in rows]
+        return year_month_summery  
     
 

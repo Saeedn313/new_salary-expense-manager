@@ -9,18 +9,40 @@ cost_db.create_cost_tables()
 
 
 @router.get("/summery")
-def hello_world():
+def get_cost_summery():
     costs_summery = cost_db.get_costs_summery()
     return {"summery": costs_summery}
 
-@router.get("/filter-costs")
+@router.get("/monthly-range")
 def filter_costs(start_year: int, end_year: int, start_month:int = None, end_month: int = None):
-    filtered_costs = cost_db.get_cost_within_year_month(start_year, end_year, start_month, end_month)
-    
-    if not filtered_costs:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No result found!")
-    return {"data": filtered_costs}
+    try:
+        if start_month and not end_month or not start_month and end_month:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Start and end month both should be specified!")
+        
+        filtered_costs = cost_db.get_cost_within_year_month(start_year, end_year, start_month, end_month)
+        
+        if filtered_costs is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No result found!")
+        return {"data": filtered_costs}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
+@router.get("/monthly-costs-avg")
+def get_monthly_cost_avg(year: int, month: int):
+    try:
+        monthly_cost_avg = cost_db.get_avg_month_year(year, month)
+        if monthly_cost_avg is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cost not found")
+        return {"data": monthly_cost_avg}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
+    
+    
+    
 @router.get("/")
 def get_all_costs():
     try:
@@ -44,6 +66,8 @@ def get_one_user(cost_id: int):
         cost_out = CostOut(**cost.to_dict())
         return {"cost": cost_out}
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
     

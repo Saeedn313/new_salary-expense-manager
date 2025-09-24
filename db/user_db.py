@@ -1,7 +1,7 @@
 from config import DB_FILE
 from .base_db import BaseDb
 from models.db_models.users import Developer, Manager
-from datetime import datetime
+from jdatetime import datetime
 
 
 
@@ -26,7 +26,7 @@ class UserDb(BaseDb):
 
     def add_user(self, user_dict: dict):
         user_obj = self.map_role[user_dict["role"]]
-        time_stamp = datetime.now().strftime("%I:%M%p on %B %d, %Y")
+        time_stamp = datetime.now().strftime("%A، %d %B %Y")
         user = user_obj(name= user_dict["name"], family=user_dict["family"], created_at=time_stamp)
 
         cursor = self.conn.cursor()

@@ -74,7 +74,7 @@ def update_user(user_id: int, user: UserIn):
         updated = user_db.update_user(user_id, user.dict())
         if not updated:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found to update!")
-        return {"message": "User with id {user_id} is updated!"}
+        return {"message": f"User with id {user_id} is updated!"}
     except HTTPException:
         raise
     

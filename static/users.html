@@ -1,18 +1,24 @@
-
-    <h1>This is users page</h1>
-    <h3>ALL USERS</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Family</th>
-                <th>Role</th>
-            </tr>
-        </thead>
-        <tbody id="user-list">
-        </tbody>
-        </table>
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f0f0f0;
+  }
+  td[contenteditable] {
+    background-color: #fff8dc;
+    cursor: text;
+  }
+</style>
+<h1>This is users page</h1>
 <h3>Add user form</h3>
 <form id="add-user-form">
   <label for="name">Name:</label>
@@ -31,4 +37,15 @@
   <button type="submit">Add User</button>
 </form>
 
-
+<h3>ALL USERS</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Name</th>
+      <th>Family</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody id="user-list"></tbody>
+</table>

@@ -1,75 +1,251 @@
+<title>📊 Business Dashboard</title>
 <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.2em;
-      color: #333;
-    }
-    .metric {
-      font-size: 1.5em;
-      color: #0077cc;
-      margin: 10px 0;
-    }
-    .list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .list li {
-      margin: 5px 0;
-    }
-  </style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .section {
+    margin-bottom: 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .card h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #333;
+  }
+  .metric {
+    font-size: 1.5em;
+    color: #0077cc;
+    margin: 10px 0;
+  }
+  .list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .list li {
+    margin: 5px 0;
+  }
+  .controls {
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .controls select,
+  .controls button {
+    padding: 8px 12px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f0f0f0;
+  }
+  td[contenteditable] {
+    background-color: #fff8dc;
+    cursor: text;
+  }
+</style>
+<h1>📊 Business Management Dashboard</h1>
 
-<h1>📊 System Summary Dashboard</h1>
+<!-- 🧍 Section 1: User Summary -->
+<div class="section">
+  <div class="grid">
+    <!-- Costs Summary -->
+    <div class="card">
+      <h2>💰 Costs</h2>
+      <div class="metric" id="total-spend">Total Spend: ...</div>
+      <ul class="list">
+        <li id="total-costs">Total Costs: ...</li>
+        <li id="avg-spend">Avg Monthly Spend: ...</li>
+        <li id="top-cost">Top Cost: ...</li>
+        <li id="lowest-cost">Lowest Cost: ...</li>
+      </ul>
+    </div>
 
-<div class="grid">
-  <!-- Users Summary -->
-  <div class="card">
-  <h2>👤 Users</h2>
-  <div class="metric" id="total-users">Total Users: ...</div>
-  <ul class="list" id="roles-list">
-    <!-- Roles will be inserted here -->
-  </ul>
-</div>
-
-  <!-- Costs Summary -->
-  <div class="card">
-  <h2>💰 Costs</h2>
-  <div class="metric" id="total-spend">Total Spend: ...</div>
-  <ul class="list">
-    <li id="avg-spend">Avg Monthly Spend: ...</li>
-    <li id="top-cost">Top Cost: ...</li>
-    <li id="lowest-cost">Lowest Cost: ...</li>
-  </ul>
-</div>
-  <!-- Salary Summary -->
+    <!-- Salary Summary -->
+    <div class="card">
+      <h2>👤 Users</h2>
+      <div class="metric" id="total-users">Total Users: ...</div>
+      <ul class="list" id="roles-list">
+        <!-- Roles will be inserted here -->
+      </ul>
+    </div>
+  </div>
   <div class="card">
     <h2>🧑‍💼 Salaries</h2>
-    <div class="metric">Total Paid: $18,300</div>
-    <ul class="list">
-      <li>Total Hours: 920</li>
-      <li>Avg Hourly Rate: $42.50</li>
-      <li>Top Earner: Reza Hossein ($4,500)</li>
-    </ul>
+    <div class="grid">
+      <!-- Left: Salary Summary -->
+      <div>
+        <h3>📊 Summary</h3>
+        <ul class="list">
+          <li id="salary-total-paid">Total Paid: ...</li>
+          <li id="salary-total-hours">Total Hours: ...</li>
+          <li id="salary-avg-rate">Avg Hourly Rate: ...</li>
+          <li id="salary-record-count">Salary Records: ...</li>
+        </ul>
+      </div>
+
+      <!-- Right: Role Breakdown -->
+      <div>
+        <h3>🧑‍💼 By Role</h3>
+        <table id="role-salary-table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Total Salary</th>
+              <th>Avg Rate</th>
+              <th>Total Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- 📦 Section 2: Detailed Data (Costs + Salaries) -->
+
+<div class="section">
+  <div class="card">
+    <h2>📅 Monthly Cost Breakdown</h2>
+
+    <div class="controls">
+      <label for="avg-month">Month:</label>
+      <input type="number" id="avg-month" min="1" max="12" placeholder="1–12" />
+
+      <label for="avg-year">Year:</label>
+      <input type="number" id="avg-year" placeholder="e.g. 1402" />
+
+      <button id="get-monthly-avg">Get Monthly Average</button>
+    </div>
+
+    <p id="monthly-average" style="font-weight: bold; color: #0077cc">
+      Monthly Average: ...
+    </p>
+    <div class="controls">
+      <button id="show-range-form">🔍 Filter by Month & Year Range</button>
+    </div>
+
+    <!-- Hidden Range Filter Form -->
+    <div class="controls" id="range-form" style="display: none">
+      <label for="start-year">Start Year:</label>
+      <input type="number" id="start-year" placeholder="e.g. 1402" />
+
+      <label for="start-month">Start Month:</label>
+      <input
+        type="number"
+        id="start-month"
+        min="1"
+        max="12"
+        placeholder="1–12"
+      />
+
+      <label for="end-year">End Year:</label>
+      <input type="number" id="end-year" placeholder="e.g. 1403" />
+
+      <label for="end-month">End Month:</label>
+      <input type="number" id="end-month" min="1" max="12" placeholder="1–12" />
+
+      <button id="fetch-range">Get Range Data</button>
+    </div>
+
+    <!-- Editable Cost Table -->
+    <table id="cost-table">
+      <thead>
+        <tr>
+          <th>Cost Ind</th>
+          <th>Amount</th>
+          <th>Year</th>
+          <th>Month</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically inserted -->
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card">
+  <h2>📋 Salary Details</h2>
+
+  <!-- Toggle Button -->
+  <div class="controls">
+    <button id="toggle-salary-form">🔍 Show Salary Range Filter</button>
+  </div>
+
+  <!-- Salary Range Filter (hidden by default) -->
+  <div class="controls" id="salary-range-form" style="display: none">
+    <label for="salary-start-year">Start Year:</label>
+    <input type="number" id="salary-start-year" placeholder="e.g. 2024" />
+
+    <label for="salary-start-month">Start Month:</label>
+    <input
+      type="number"
+      id="salary-start-month"
+      min="1"
+      max="12"
+      placeholder="1–12"
+    />
+
+    <label for="salary-end-year">End Year:</label>
+    <input type="number" id="salary-end-year" placeholder="e.g. 2025" />
+
+    <label for="salary-end-month">End Month:</label>
+    <input
+      type="number"
+      id="salary-end-month"
+      min="1"
+      max="12"
+      placeholder="1–12"
+    />
+
+    <button id="fetch-salary-range">Get Salary Range</button>
+  </div>
+
+  <!-- Salary Table -->
+  <table id="salary-table">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Month</th>
+        <th>Total Salary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be dynamically inserted -->
+    </tbody>
+  </table>
 </div>

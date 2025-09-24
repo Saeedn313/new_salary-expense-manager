@@ -38,13 +38,13 @@ class CostDb(BaseDb):
         for row in rows:
             cost = Cost(description=row["description"], amount=row["amount"], year=row["year"], month=row["month"], id=row["cost_id"])
             all_costs.append(cost)
-        print(all_costs)
         return all_costs
     
     def get_one_cost(self, cost_id: int):
         cursor = self.conn.cursor()
         row = cursor.execute(self.fetch_one(self.table_name, "cost_id"), (cost_id,)).fetchone()
-        
+        if not row:
+            return None
         cost = Cost(description=row["description"], amount=row["amount"], id=row["cost_id"], year=row["year"], month=row["month"])
         return cost if cost is not None else None
     
@@ -94,16 +94,22 @@ class CostDb(BaseDb):
     def get_cost_within_year_month(self, start_year: int, end_year:int, start_month: int = None, end_month:int = None):
         cursor = self.conn.cursor()
         if start_month and end_month:
-            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
+            rows = cursor.execute(f"SELECT year, month , amount FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
         else:
-            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month",(start_year, start_month)).fetchall()
-        
-        year_month_summery = [{"year": row["year"], "month": row["month"], "total_spend": row["total_spend"]} for row in rows]
+            rows = cursor.execute(f"SELECT year, month , amount FROM {self.table_name} WHERE year BETWEEN ? AND ? ORDER BY year, month",(start_year, end_year)).fetchall()
+        year_month_summery = [{"year": row["year"], "month": row["month"], "amount": row["amount"]} for row in rows]
+        print(year_month_summery, rows)
+        if not rows:
+            return None
         return year_month_summery  
     
-    def get_avg_month_year(self, month, year):
+    def get_avg_month_year(self, year: int, month: int):
         cursor = self.conn.cursor()
         row = cursor.execute(f"SELECT year, month, AVG(amount) avg_spend FROM costs WHERE year=? AND month=?", (year, month)).fetchone()
         
+        if row["year"] == None or row["month"] == None:
+            return None
+        
         month_avg = {"year": row["year"], "month": row["month"], "avg_spend": row["avg_spend"]}
         return month_avg
+        

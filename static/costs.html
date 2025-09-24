@@ -1,11 +1,43 @@
-<h1>THis is costs page</h1>
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f0f0f0;
+  }
+  td[contenteditable] {
+    background-color: #fff8dc;
+    cursor: text;
+  }
+</style>
+<h2>Add costs form</h2>
 
-    <form id="add-cost-form">
+<form id="add-cost-form">
   <label for="description">Description:</label>
-  <input type="text" id="description" name="description" placeholder="description" required />
+  <input
+    type="text"
+    id="description"
+    name="description"
+    placeholder="description"
+    required
+  />
 
   <label for="amount">amount:</label>
-  <input type="number" id="amount" name="amount" placeholder="amount" required />
+  <input
+    type="number"
+    id="amount"
+    name="amount"
+    placeholder="amount"
+    required
+  />
 
   <label for="year">Year:</label>
   <input type="number" id="year" name="year" placeholder="year" required />
@@ -15,28 +47,36 @@
   <button type="submit">Add Cost</button>
 </form>
 
-    <h3>ALL COSTS</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>description</th>
-                <th>amount</th>
-                <th>year</th>
-                <th>month</th>
-            </tr>
-        </thead>
-        <tbody id="cost-list">
-        </tbody>
-        </table>
-         <div id="edit-cost-form" style="display: none;">
+<h3>ALL COSTS</h3>
+<table>
+  <thead>
+    <tr>
+      <th>description</th>
+      <th>amount</th>
+      <th>year</th>
+      <th>month</th>
+    </tr>
+  </thead>
+  <tbody id="cost-list"></tbody>
+</table>
+<div id="edit-cost-form" style="display: none">
   <h3>Edit Cost</h3>
   <form id="update-cost-form">
-    <input type="hidden" name="cost_id" id="edit_cost_id">
+    <input type="hidden" name="cost_id" id="edit_cost_id" />
 
-    <label for="description">Description: <input type="text" name="description" id="edit_description" required></label>
-    <label for="amount">Amount: <input type="number" name="amount" id="edit_amount" required></label>
-    <label for="year">Year: <input type="number" name="year" id="edit_year" required></label>
-    <label for="month">Month <input type="number" name="month" id="edit_month" required></label>
+    <label for="description"
+      >Description:
+      <input type="text" name="description" id="edit_description" required
+    /></label>
+    <label for="amount"
+      >Amount: <input type="number" name="amount" id="edit_amount" required
+    /></label>
+    <label for="year"
+      >Year: <input type="number" name="year" id="edit_year" required
+    /></label>
+    <label for="month"
+      >Month <input type="number" name="month" id="edit_month" required
+    /></label>
 
     <button type="submit">Update</button>
     <button type="button" onclick="hideEditForm()">Cancel</button>
