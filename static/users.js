@@ -10,7 +10,13 @@ function renderUserTable(users) {
       <td>${user.name}</td>
       <td>${user.family}</td>
       <td>${user.role}</td>
-      <td><button data-id="${user.id}" class="delete-user-btn">Delete</button></td>
+      <td class="text-end">
+        <button 
+          data-id="${user.id}" 
+          class="btn btn-sm btn-danger delete-user-btn">
+          🗑️ Delete
+        </button>
+      </td>
     </tr>
   `
     )
@@ -25,7 +31,7 @@ export async function renderUsers() {
     const users = Array.isArray(data) ? data : data.users;
     list.innerHTML = renderUserTable(users);
   } catch (err) {
-    list.innerHTML = `<tr><td colspan="5">Failed to load users</td></tr>`;
+    list.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Failed to load users</td></tr>`;
     showPopup(err.message, "error");
     return;
   }

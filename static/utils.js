@@ -1,6 +1,7 @@
 // utils.js
 export async function apiRequest(url, options = {}) {
   try {
+    console.log(url)
     const res = await fetch(url, options);
 
     if (!res.ok) {

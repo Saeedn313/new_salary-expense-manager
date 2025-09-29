@@ -83,8 +83,9 @@
     <!-- Costs Summary -->
     <div class="card">
       <h2>💰 Costs</h2>
-      <div class="metric" id="total-spend">Total Spend: ...</div>
+      <div class="metric" id="month_name">This Month:</div>
       <ul class="list">
+        <li id="total-spend">Total Spend: ...</li>
         <li id="total-costs">Total Costs: ...</li>
         <li id="avg-spend">Avg Monthly Spend: ...</li>
         <li id="top-cost">Top Cost: ...</li>
@@ -92,7 +93,7 @@
       </ul>
     </div>
 
-    <!-- Salary Summary -->
+    <!-- Users Summary -->
     <div class="card">
       <h2>👤 Users</h2>
       <div class="metric" id="total-users">Total Users: ...</div>
@@ -100,13 +101,28 @@
         <!-- Roles will be inserted here -->
       </ul>
     </div>
+
+    <!-- NEW: Total Outcome Summary -->
+    <div class="card">
+      <h2>📊 Total Outcome</h2>
+      <div class="metric" id="outcome-month">This Month:</div>
+      <ul class="list">
+        <li id="outcome-total">Total Outcome (in toman): ...</li>
+        <li id="outcome-salaries">Salaries: ...</li>
+        <li id="outcome-costs">Costs: ...</li>
+        <li id="outcome-percent">Breakdown: ...</li>
+      </ul>
+    </div>
   </div>
+
+  <!-- Salaries Card (unchanged) -->
   <div class="card">
     <h2>🧑‍💼 Salaries</h2>
     <div class="grid">
       <!-- Left: Salary Summary -->
       <div>
         <h3>📊 Summary</h3>
+        <div class="metric" id="salary-month_name">This Month:</div>
         <ul class="list">
           <li id="salary-total-paid">Total Paid: ...</li>
           <li id="salary-total-hours">Total Hours: ...</li>
@@ -122,7 +138,7 @@
           <thead>
             <tr>
               <th>Role</th>
-              <th>Total Salary</th>
+              <th>Total Salary (in toman)</th>
               <th>Avg Rate</th>
               <th>Total Hours</th>
             </tr>
@@ -138,114 +154,90 @@
 
 <!-- 📦 Section 2: Detailed Data (Costs + Salaries) -->
 
-<div class="section">
-  <div class="card">
-    <h2>📅 Monthly Cost Breakdown</h2>
+<!-- 📦 Section 2: Detailed Data (Costs + Salaries) -->
+<div class="card">
+  <div class="card-body">
+    <h2 class="h5 mb-3">📊 Data Viewer</h2>
 
-    <div class="controls">
-      <label for="avg-month">Month:</label>
-      <input type="number" id="avg-month" min="1" max="12" placeholder="1–12" />
+    <!-- Filter Form -->
+    <form id="filterForm" class="row g-2 mb-3">
+      <div class="col-md-2">
+        <select id="entity" class="form-select">
+          <option value="costs">💰 Costs</option>
+          <option value="salaries">🧑‍💼 Salaries</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input
+          type="number"
+          id="startYear"
+          class="form-control"
+          placeholder="Start Year"
+        />
+      </div>
+      <div class="col-md-2">
+        <input
+          type="number"
+          id="startMonth"
+          class="form-control"
+          placeholder="Start Month"
+          min="1"
+          max="12"
+        />
+      </div>
+      <div class="col-md-2">
+        <input
+          type="number"
+          id="endYear"
+          class="form-control"
+          placeholder="End Year"
+        />
+      </div>
+      <div class="col-md-2">
+        <input
+          type="number"
+          id="endMonth"
+          class="form-control"
+          placeholder="End Month"
+          min="1"
+          max="12"
+        />
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Get Data</button>
+      </div>
+    </form>
 
-      <label for="avg-year">Year:</label>
-      <input type="number" id="avg-year" placeholder="e.g. 1402" />
-
-      <button id="get-monthly-avg">Get Monthly Average</button>
+    <!-- Data Table -->
+    <div class="table-responsive">
+      <table id="dataTable" class="table table-striped table-bordered">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
     </div>
-
-    <p id="monthly-average" style="font-weight: bold; color: #0077cc">
-      Monthly Average: ...
-    </p>
-    <div class="controls">
-      <button id="show-range-form">🔍 Filter by Month & Year Range</button>
-    </div>
-
-    <!-- Hidden Range Filter Form -->
-    <div class="controls" id="range-form" style="display: none">
-      <label for="start-year">Start Year:</label>
-      <input type="number" id="start-year" placeholder="e.g. 1402" />
-
-      <label for="start-month">Start Month:</label>
-      <input
-        type="number"
-        id="start-month"
-        min="1"
-        max="12"
-        placeholder="1–12"
-      />
-
-      <label for="end-year">End Year:</label>
-      <input type="number" id="end-year" placeholder="e.g. 1403" />
-
-      <label for="end-month">End Month:</label>
-      <input type="number" id="end-month" min="1" max="12" placeholder="1–12" />
-
-      <button id="fetch-range">Get Range Data</button>
-    </div>
-
-    <!-- Editable Cost Table -->
-    <table id="cost-table">
-      <thead>
-        <tr>
-          <th>Cost Ind</th>
-          <th>Amount</th>
-          <th>Year</th>
-          <th>Month</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Rows will be dynamically inserted -->
-      </tbody>
-    </table>
   </div>
 </div>
-<div class="card">
-  <h2>📋 Salary Details</h2>
 
-  <!-- Toggle Button -->
-  <div class="controls">
-    <button id="toggle-salary-form">🔍 Show Salary Range Filter</button>
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Details</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table id="detailTable" class="table table-sm table-hover">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <!-- Salary Range Filter (hidden by default) -->
-  <div class="controls" id="salary-range-form" style="display: none">
-    <label for="salary-start-year">Start Year:</label>
-    <input type="number" id="salary-start-year" placeholder="e.g. 2024" />
-
-    <label for="salary-start-month">Start Month:</label>
-    <input
-      type="number"
-      id="salary-start-month"
-      min="1"
-      max="12"
-      placeholder="1–12"
-    />
-
-    <label for="salary-end-year">End Year:</label>
-    <input type="number" id="salary-end-year" placeholder="e.g. 2025" />
-
-    <label for="salary-end-month">End Month:</label>
-    <input
-      type="number"
-      id="salary-end-month"
-      min="1"
-      max="12"
-      placeholder="1–12"
-    />
-
-    <button id="fetch-salary-range">Get Salary Range</button>
-  </div>
-
-  <!-- Salary Table -->
-  <table id="salary-table">
-    <thead>
-      <tr>
-        <th>Year</th>
-        <th>Month</th>
-        <th>Total Salary</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Rows will be dynamically inserted -->
-    </tbody>
-  </table>
 </div>

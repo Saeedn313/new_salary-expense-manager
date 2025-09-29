@@ -1,6 +1,7 @@
 from config import DB_FILE
 from .base_db import BaseDb
 from models.db_models.costs import Cost
+from jdatetime import datetime
 
 class CostDb(BaseDb):
     def __init__(self):
@@ -84,20 +85,23 @@ class CostDb(BaseDb):
         
         return year_summery
     
-    def get_cost_by_month(self, month:int ):
+    def get_cost_by_year_month(self, year:int, month:int ):
         cursor = self.conn.cursor()
-        rows = cursor.execute(f"SELECT month, SUM(amount) AS total_spend FROM {self.table_name} WHERE month=? GROUP BY month ORDERBY month DESC", (month,)).fetchall()
+        rows = cursor.execute(f"SELECT year, month, amount FROM {self.table_name} WHERE year=? AND month=? ORDER BY month DESC", (year, month)).fetchall()
         
-        month_summery = [{"month": row["month"], "total_spend": row["total_spend"]} for row in rows]
+        if not rows:
+            return None
+        
+        month_summery = [{"year": row["year"], "month": row["month"], "amount": row["amount"]} for row in rows]
         return month_summery
     
     def get_cost_within_year_month(self, start_year: int, end_year:int, start_month: int = None, end_month:int = None):
         cursor = self.conn.cursor()
         if start_month and end_month:
-            rows = cursor.execute(f"SELECT year, month , amount FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
+            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
         else:
-            rows = cursor.execute(f"SELECT year, month , amount FROM {self.table_name} WHERE year BETWEEN ? AND ? ORDER BY year, month",(start_year, end_year)).fetchall()
-        year_month_summery = [{"year": row["year"], "month": row["month"], "amount": row["amount"]} for row in rows]
+            rows = cursor.execute(f"SELECT year, month , SUM(amount) AS total_spend FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month",(start_year, end_year)).fetchall()
+        year_month_summery = [{"year": row["year"], "month": row["month"], "total_spend": row["total_spend"]} for row in rows]
         print(year_month_summery, rows)
         if not rows:
             return None
@@ -112,4 +116,14 @@ class CostDb(BaseDb):
         
         month_avg = {"year": row["year"], "month": row["month"], "avg_spend": row["avg_spend"]}
         return month_avg
-        
+    
+    def get_last_month_summary(self):
+        cursor = self.conn.cursor()
+        this_year, this_month = (datetime.now().year, datetime.now().month)
+        month_name = datetime.now().strftime("%B")
+        row = cursor.execute("SELECT COUNT(*) AS total_costs, SUM(amount) AS total_spend, AVG(amount) AS avrage_spend, MIN(amount) AS lowest_spend, MAX(amount) AS highest_spend, month FROM costs WHERE year=? AND month=? GROUP BY year, month", (this_year,this_month)).fetchone()
+        if not row:
+            return None
+        last_month_summary = {"total_costs": row["total_costs"], "total_spend": row["total_spend"], "avrage_spend": row["avrage_spend"], "lowest_spend": row["lowest_spend"], "highest_spend": row["highest_spend"], "month": month_name}
+        return last_month_summary
+            

@@ -1,6 +1,7 @@
 from config import DB_FILE
 from .base_db import BaseDb
 from models.api_models.salary_schema import SalaryOut
+from jdatetime import datetime
 
 # assuming there is no base model for salary. 
 # there is only pydantic models to be passed to fastapi.
@@ -192,7 +193,7 @@ class SalaryDb(BaseDb):
         
  
     
-    def get_salary_per_month(self, year: int, month: int):
+    def get_salary_by_year_month(self, year: int, month: int):
         cursor = self.conn.cursor()
         rows = cursor.execute(
             """
@@ -239,7 +240,7 @@ class SalaryDb(BaseDb):
         if start_month and end_month:
             rows = cursor.execute(f"SELECT year, month , SUM(total_salary) AS total_salary FROM {self.table_name} WHERE year BETWEEN ? AND ? AND month BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month", (start_year, end_year, start_month, end_month)).fetchall()
         else:
-            rows = cursor.execute(f"SELECT year, month , SUM(total_salary) AS total_salary FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month",(start_year, end_year)).fetchall()
+            rows = cursor.execute(f"SELECT year, month , SUM(total_salary) AS total_salary FROM {self.table_name} WHERE year BETWEEN ? AND ? GROUP BY year, month ORDER BY year, month ",(start_year, end_year)).fetchall()
             
         if not rows:
             return None
@@ -247,4 +248,14 @@ class SalaryDb(BaseDb):
         year_month_summery = [{"year": row["year"], "month": row["month"], "total_salary": row["total_salary"]} for row in rows]
         return year_month_summery  
     
+    def get_last_month_salary(self):
+        cursor = self.conn.cursor()
+        this_year, this_month = (datetime.now().year, datetime.now().month)
+        month_name = datetime.now().strftime("%B")
+        row = cursor.execute("SELECT SUM(total_salary) AS total_salary, SUM(total_hour) AS total_hour , AVG(hourly_rate) AS avg_hourly_rate, COUNT(*) AS total_record FROM salaries WHERE year=? AND month=? GROUP BY year, month", (this_year, this_month)).fetchone()
+        if not row:
+            return None
+        
+        last_month_summary = {"total_salary": row["total_salary"], "total_hour": row["total_hour"], "avg_hourly_rate": row["avg_hourly_rate"], "total_record": row["total_record"], "month": month_name}
+        return last_month_summary
 

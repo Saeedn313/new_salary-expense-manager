@@ -10,8 +10,16 @@ cost_db.create_cost_tables()
 
 @router.get("/summery")
 def get_cost_summery():
-    costs_summery = cost_db.get_costs_summery()
-    return {"summery": costs_summery}
+    try:
+        costs_summery = cost_db.get_last_month_summary()
+        if costs_summery is None:
+            return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No summary found for last month")
+        return {"summery": costs_summery}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
+
 
 @router.get("/monthly-range")
 def filter_costs(start_year: int, end_year: int, start_month:int = None, end_month: int = None):
@@ -32,6 +40,7 @@ def filter_costs(start_year: int, end_year: int, start_month:int = None, end_mon
 @router.get("/monthly-costs-avg")
 def get_monthly_cost_avg(year: int, month: int):
     try:
+        
         monthly_cost_avg = cost_db.get_avg_month_year(year, month)
         if monthly_cost_avg is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cost not found")
@@ -40,6 +49,21 @@ def get_monthly_cost_avg(year: int, month: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{e}")
+    
+@router.get("/monthly-cost")
+def get_monthly_cost(year: int, month: int):
+    try:
+        if not 0 < month <= 12:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="month should be between 1-12")
+        monthly_costs = cost_db.get_cost_by_year_month(year, month)
+        if monthly_costs is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No cost found in date {year}-{month}")
+        return monthly_costs
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
     
     
     

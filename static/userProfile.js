@@ -6,29 +6,30 @@ export async function renderProfilePage(userId) {
     const data = await apiRequest(`/api/users/${userId}`);
     const user = data.user;
 
+    // Populate profile info
     const profile = document.getElementById("user-profile");
     profile.innerHTML = `
       <p><strong>ID:</strong> ${user.id}</p>
       <p><strong>Name:</strong> ${user.name}</p>
       <p><strong>Family:</strong> ${user.family}</p>
       <p><strong>Role:</strong> ${user.role}</p>
-      <p><strong>Role:</strong> ${user.created_at}</p>
+      <p><strong>Created:</strong> ${user.created_at}</p>
     `;
 
+    // Pre-fill update user form
     document.getElementById("update_user_id").value = userId;
     document.getElementById("name").value = user.name || "";
     document.getElementById("family").value = user.family || "";
     document.getElementById("role").value = user.role || "";
 
+    // Update user form
     document
       .getElementById("update-user-form")
       .addEventListener("submit", async function (e) {
         e.preventDefault();
         const json = Object.fromEntries(new FormData(this).entries());
-        const updateUserId = json.user_id;
-
         try {
-          await apiRequest(`/api/users/update-user/${updateUserId}`, {
+          await apiRequest(`/api/users/update-user/${json.user_id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(json),
@@ -41,6 +42,7 @@ export async function renderProfilePage(userId) {
         }
       });
 
+    // Add salary form
     document.getElementById("salary_user_id").value = userId;
     document
       .getElementById("add-salary-form")
@@ -60,6 +62,7 @@ export async function renderProfilePage(userId) {
         }
       });
 
+    // Load salaries
     try {
       const salaryData = await apiRequest(`/api/salaries/${userId}`);
       const salaries = Array.isArray(salaryData)
@@ -71,32 +74,40 @@ export async function renderProfilePage(userId) {
       list.innerHTML = salaries
         .map(
           (salary) => `
-        <tr>
-          <td>${salary.year}</td>
-          <td>${salary.month}</td>
-          <td>${format(salary.hourly_rate)}</td>
-          <td>${salary.total_hour}</td>
-          <td>${salary.total_min}</td>
-          <td>${format(salary.total_salary)}</td>
-          <td>
-            <button data-id="${
-              salary.id
-            }" class="delete-salary-btn">Delete</button>
-            <button class="edit-salary-btn"
-              data-salary-id="${salary.id}"
-              data-user-id="${salary.user_id}"
-              data-year="${salary.year}"
-              data-month="${salary.month}"
-              data-hourly-rate="${salary.hourly_rate}"
-              data-total-hour="${salary.total_hour}"
-              data-total-min="${salary.total_min}"
-            >Edit</button>
-          </td>
-        </tr>
-      `
+          <tr>
+            <td>${salary.year}</td>
+            <td>${salary.month}</td>
+            <td>${format(salary.hourly_rate)}</td>
+            <td>${salary.total_hour}</td>
+            <td>${salary.total_min}</td>
+            <td>${format(salary.total_salary)}</td>
+            <td class="text-end">
+              <button 
+                class="btn btn-sm btn-warning me-2 edit-salary-btn"
+                id="edit-salary-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#editSalaryModal"
+                data-salary-id="${salary.id}"
+                data-user-id="${salary.user_id}"
+                data-year="${salary.year}"
+                data-month="${salary.month}"
+                data-hourly-rate="${salary.hourly_rate}"
+                data-total-hour="${salary.total_hour}"
+                data-total-min="${salary.total_min}">
+                ✏️ Edit
+              </button>
+              <button 
+                class="btn btn-sm btn-danger delete-salary-btn"
+                data-id="${salary.id}">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        `
         )
         .join("");
 
+      // Populate modal on Edit click
       document.querySelectorAll(".edit-salary-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           document.getElementById("edit_salary_id").value =
@@ -110,29 +121,29 @@ export async function renderProfilePage(userId) {
             btn.dataset.totalHour;
           document.getElementById("edit_total_min").value =
             btn.dataset.totalMin;
-          document.getElementById("edit-salary-form").style.display = "block";
         });
       });
 
-      window.hideEditForm = function () {
-        document.getElementById("edit-salary-form").style.display = "none";
-        document.getElementById("update-salary-form").reset();
-      };
-
+      // Update salary form (inside modal)
       document
         .getElementById("update-salary-form")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
           const json = Object.fromEntries(new FormData(this).entries());
-          const salaryId = json.salary_id;
-
           try {
-            await apiRequest(`/api/salaries/update-salary/${salaryId}`, {
+            await apiRequest(`/api/salaries/update-salary/${json.salary_id}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(json),
             });
             showPopup("✅ Salary updated successfully", "success");
+
+            // Close modal
+            const modalEl = document.getElementById("editSalaryModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            // Refresh
             window.history.pushState({}, "", `/users/${userId}`);
             handleLocation();
           } catch (err) {
@@ -140,6 +151,7 @@ export async function renderProfilePage(userId) {
           }
         });
 
+      // Delete salary
       document.querySelectorAll(".delete-salary-btn").forEach((btn) => {
         btn.addEventListener("click", async function () {
           const salaryId = this.dataset.id;
@@ -157,7 +169,7 @@ export async function renderProfilePage(userId) {
       });
     } catch (err) {
       document.getElementById("salary_list").innerHTML = `
-        <tr><td colspan="7">Failed to load salaries</td></tr>
+        <tr><td colspan="7" class="text-center text-danger">Failed to load salaries</td></tr>
       `;
       showPopup(err.message, "error");
     }

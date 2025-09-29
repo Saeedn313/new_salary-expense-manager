@@ -6,23 +6,31 @@ function renderCostTable(costs) {
   return costs
     .map(
       (cost) => `
-    <tr>
-      <td>${cost.description}</td>
-      <td>${format(cost.amount)}</td>
-      <td>${cost.year}</td>
-      <td>${cost.month}</td>
-      <td>
-        <button data-id="${cost.id}" class="delete-cost-btn">Delete</button>
-        <button class="edit-cost-btn"
-          data-id="${cost.id}"
-          data-description="${cost.description}"
-          data-amount="${cost.amount}"
-          data-year="${cost.year}"
-          data-month="${cost.month}"
-        >Edit</button>
-      </td> 
-    </tr>
-  `
+      <tr>
+        <td>${cost.description}</td>
+        <td>${format(cost.amount)}</td>
+        <td>${cost.year}</td>
+        <td>${cost.month}</td>
+        <td class="text-end">
+          <button 
+            class="btn btn-sm btn-warning me-2 edit-cost-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#editCostModal"
+            data-id="${cost.id}"
+            data-description="${cost.description}"
+            data-amount="${cost.amount}"
+            data-year="${cost.year}"
+            data-month="${cost.month}">
+            ✏️ Edit
+          </button>
+          <button 
+            class="btn btn-sm btn-danger delete-cost-btn"
+            data-id="${cost.id}">
+            🗑️ Delete
+          </button>
+        </td>
+      </tr>
+    `
     )
     .join("");
 }
@@ -35,12 +43,16 @@ export async function renderCosts() {
     const costs = Array.isArray(data) ? data : data.costs;
     list.innerHTML = renderCostTable(costs);
   } catch (err) {
-    list.innerHTML = `<tr><td colspan="5">Failed to load costs</td></tr>`;
+    list.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Failed to load costs</td></tr>`;
     showPopup(err.message, "error");
     return;
   }
 
-  // Edit buttons
+  // Bootstrap modal reference
+  const editModal = document.getElementById("editCostModal");
+  const editForm = document.getElementById("update-cost-form");
+
+  // Populate modal on Edit button click
   document.querySelectorAll(".edit-cost-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.getElementById("edit_cost_id").value = btn.dataset.id;
@@ -49,37 +61,33 @@ export async function renderCosts() {
       document.getElementById("edit_amount").value = btn.dataset.amount;
       document.getElementById("edit_year").value = btn.dataset.year;
       document.getElementById("edit_month").value = btn.dataset.month;
-      document.getElementById("edit-cost-form").style.display = "block";
     });
   });
 
-  // Hide edit form
-  window.hideEditForm = function () {
-    document.getElementById("edit-cost-form").style.display = "none";
-    document.getElementById("update-cost-form").reset();
-  };
+  // Update cost form submit
+  editForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const json = Object.fromEntries(new FormData(this).entries());
+    const costId = json.cost_id;
+    try {
+      await apiRequest(`/api/costs/update-cost/${costId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json),
+      });
+      showPopup("✅ Cost updated successfully", "success");
 
-  // Update cost form
-  document
-    .getElementById("update-cost-form")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const json = Object.fromEntries(new FormData(this).entries());
-      const costId = json.cost_id;
+      // Close the modal cleanly
+      const modalEl = document.getElementById("editCostModal");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
 
-      try {
-        await apiRequest(`/api/costs/update-cost/${costId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(json),
-        });
-        showPopup("✅ Cost updated successfully", "success");
-        window.history.pushState({}, "", "/costs");
-        handleLocation();
-      } catch (err) {
-        showPopup(err.message, "error");
-      }
-    });
+      // Refresh the table without a full page reload
+      renderCosts();
+    } catch (err) {
+      showPopup(err.message, "error");
+    }
+  });
 
   // Delete buttons
   document.querySelectorAll(".delete-cost-btn").forEach((btn) => {

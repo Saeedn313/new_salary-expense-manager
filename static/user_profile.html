@@ -1,81 +1,215 @@
-<h2>User Profle info</h2>
+<h2 class="mb-4">👤 User Profile Info</h2>
 
-<div id="user-profile"></div>
-<div id="user-action">
-  <form id="update-user-form">
-    <input type="hidden" name="user_id" id="update_user_id" />
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" placeholder="Name" required />
+<div id="user-profile" class="mb-4"></div>
 
-    <label for="family">Family:</label>
-    <input
-      type="text"
-      id="family"
-      name="family"
-      placeholder="Family"
-      required
-    />
+<!-- Update User Form -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">✏️ Update User</h3>
+    <form id="update-user-form" class="row g-3">
+      <input type="hidden" name="user_id" id="update_user_id" />
 
-    <label for="role">Role:</label>
-    <select id="role" name="role" required>
-      <option value="">Select Role</option>
-      <option value="Manager">Manager</option>
-      <option value="Developer">Developer</option>
-    </select>
+      <div class="col-md-6">
+        <label for="name" class="form-label">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="form-control"
+          placeholder="Name"
+          required
+        />
+      </div>
 
-    <button type="submit">Update User</button>
-  </form>
+      <div class="col-md-6">
+        <label for="family" class="form-label">Family</label>
+        <input
+          type="text"
+          id="family"
+          name="family"
+          class="form-control"
+          placeholder="Family"
+          required
+        />
+      </div>
 
-  <h3>add salary</h3>
-  <form id="add-salary-form">
-    <input type="hidden" name="user_id" id="salary_user_id" />
-    <label
-      >Year: <input type="number" name="year" min="2000" max="2100" required
-    /></label>
-    <label
-      >Month: <input type="number" name="month" min="1" max="12" required
-    /></label>
-    <label
-      >Hourly Rate:
-      <input type="number" name="hourly_rate" required
-    /></label>
-    <label
-      >Total Minutes: <input type="number" name="total_min" min="0" required
-    /></label>
-    <label
-      >Total Hours: <input type="number" name="total_hour" required
-    /></label>
-    <button type="submit">Save Salary</button>
-  </form>
+      <div class="col-md-6">
+        <label for="role" class="form-label">Role</label>
+        <select id="role" name="role" class="form-select" required>
+          <option value="">Select Role</option>
+          <option value="Manager">Manager</option>
+          <option value="Developer">Developer</option>
+        </select>
+      </div>
+
+      <div class="col-12 text-end">
+        <button type="submit" class="btn btn-success">💾 Update User</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<table border="1">
-  <thead>
-    <tr>
-      <th>Year</th>
-      <th>Month</th>
-      <th>hourly rate</th>
-      <th>total hour</th>
-      <th>total min</th>
-      <th>total salary</th>
-    </tr>
-  </thead>
-  <tbody id="salary_list"></tbody>
-</table>
-<div id="edit-salary-form" style="display: none;">
-<h3>Edit slaray</h3>
-  <form id="update-salary-form">
-    <input type="hidden" name="salary_id" id="edit_salary_id">
-    <input type="hidden" name="user_id" id="edit_user_id">
+<!-- Add Salary Form -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">➕ Add Salary</h3>
+    <form id="add-salary-form" class="row g-3">
+      <input type="hidden" name="user_id" id="salary_user_id" />
 
-    <label for="year">Year: <input type="text" name="year" id="edit_year" required></label>
-    <label for="month">Month: <input type="number" name="month" id="edit_month" required></label>
-    <label for="hourly_rate">Hourly rate: <input type="number" name="hourly_rate" id="edit_hourly_rate" required></label>
-    <label for="total_hour">Total hour <input type="number" name="total_hour" id="edit_total_hour" required></label>
-    <label for="total_min">Total min <input type="number" name="total_min" id="edit_total_min" required></label>
+      <div class="col-md-4">
+        <label class="form-label">Year</label>
+        <input type="number" name="year" class="form-control" required />
+      </div>
 
-    <button type="submit">Update</button>
-    <button type="button" onclick="hideEditForm()">Cancel</button>
-  </form>
+      <div class="col-md-4">
+        <label class="form-label">Month</label>
+        <input
+          type="number"
+          name="month"
+          class="form-control"
+          min="1"
+          max="12"
+          required
+        />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Hourly Rate</label>
+        <input type="number" name="hourly_rate" class="form-control" required />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Total Minutes</label>
+        <input
+          type="number"
+          name="total_min"
+          class="form-control"
+          min="0"
+          required
+        />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Total Hours</label>
+        <input type="number" name="total_hour" class="form-control" required />
+      </div>
+
+      <div class="col-12 text-end">
+        <button type="submit" class="btn btn-primary">Save Salary</button>
+      </div>
+    </form>
+  </div>
 </div>
-<a href="/users" onclick="route(event)">← Back to Users</a>
+
+<!-- Salary Table -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h3 class="card-title mb-3">📊 Salary Records</h3>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Year</th>
+            <th>Month</th>
+            <th>Hourly Rate (in toman)</th>
+            <th>Total Hours</th>
+            <th>Total Minutes</th>
+            <th>Total Salary (in toman)</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="salary_list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Salary Modal -->
+<div class="modal fade" id="editSalaryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title">✏️ Edit Salary</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <form id="update-salary-form" class="modal-body row g-3">
+        <input type="hidden" name="salary_id" id="edit_salary_id" />
+        <input type="hidden" name="user_id" id="edit_user_id" />
+
+        <div class="col-md-6">
+          <label for="edit_year" class="form-label">Year</label>
+          <input
+            type="number"
+            name="year"
+            id="edit_year"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label for="edit_month" class="form-label">Month</label>
+          <input
+            type="number"
+            name="month"
+            id="edit_month"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label for="edit_hourly_rate" class="form-label">Hourly Rate</label>
+          <input
+            type="number"
+            name="hourly_rate"
+            id="edit_hourly_rate"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label for="edit_total_hour" class="form-label">Total Hours</label>
+          <input
+            type="number"
+            name="total_hour"
+            id="edit_total_hour"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-12">
+          <label for="edit_total_min" class="form-label">Total Minutes</label>
+          <input
+            type="number"
+            name="total_min"
+            id="edit_total_min"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-success">💾 Update</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<a href="/users" onclick="route(event)" class="btn btn-link mt-3"
+  >← Back to Users</a
+>
